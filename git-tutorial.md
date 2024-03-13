@@ -1,6 +1,7 @@
 ﻿# Tutorial Rápido de Git (para Windows)
 
 [Instalar o Git](https://github.com/git-for-windows/git/releases/download/v2.44.0.windows.1/Git-2.44.0-64-bit.exe)
+
 [Instalar o GitHub CLI - para clonar e fazer pull requests diretamente da conta](https://github.com/cli/cli/releases/download/v2.45.0/gh_2.45.0_windows_amd64.msi)
 
 *Todos os passos assumem estar a correr o Terminal na pasta onde é pretendido que a ação corra*
