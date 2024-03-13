@@ -1,0 +1,461 @@
+#Patient Identifier	Ethnicity Category	Sex	Diagnosis Age	Country	Smoker	Tumor Other Histologic Subtype	Location	Neoplasm Disease Stage American Joint Committee on Cancer Code	Status	Days to Last Followup
+#Identifier to uniquely specify a patient.	The text for reporting information about ethnicity.	Sex	Age at which a condition or disease was first diagnosed.	Country of procurement.	Indicates if person is a smoker.	Text to describe a tumor's histologic subtype or mixed diagnosis that is different from previously specified options.	Location	The extent of a cancer, especially whether the disease has spread from the original site to other parts of the body based on AJCC staging criteria.	Status.	Time interval from the date of last followup to the date of initial pathologic diagnosis, represented as a calculated number of days.
+#STRING	STRING	STRING	NUMBER	STRING	STRING	STRING	STRING	STRING	STRING	NUMBER
+#1	1	1	1	1	1	1	1	1	1	1
+PATIENT_ID	ETHNICITY	SEX	AGE	COUNTRY	SMOKER	HISTOLOGICAL_SUBTYPE	LOCATION	AJCC_PATHOLOGIC_TUMOR_STAGE	STATUS	DAYS_TO_LAST_FOLLOWUP
+3.014		Male	65	United States of America		Pancreatic Ductal Adenocarcinoma		Unknown	Unknown	
+A10.7		Male	60	United States of America		Pancreatic Ductal Adenocarcinoma		Unknown	Unknown	
+A2.1		Male	62	United States of America		Pancreatic Ductal Adenocarcinoma		Unknown	Unknown	
+A32-1		Female	81	United States of America		Pancreatic Ductal Adenocarcinoma		Unknown	Unknown	
+A38-5		Male	51	United States of America		Pancreatic Ductal Adenocarcinoma		Unknown	Unknown	
+A44.2		Male	50	United States of America		Pancreatic Ductal Adenocarcinoma		Unknown	Unknown	
+A6L		Male	57	United States of America		Pancreatic Ductal Adenocarcinoma		Unknown	Unknown	
+GARV_0658	White/Caucasian	Female	66	United States of America	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+GARV_0659	White/Caucasian	Male	60	United States of America	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+GARV_0660	White/Caucasian	Female	57	United States of America	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	Lost to Follow Up	
+GARV_0661	White/Caucasian	Male	67	United States of America		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+GARV_0662	White/Caucasian	Male	44	United States of America	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	Lost to Follow Up	
+GARV_0663	White/Caucasian	Male	75	United States of America	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+GARV_0664	White/Caucasian	Male	77	United States of America	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIA	DOD	
+GARV_0665	White/Caucasian	Male	57	United States of America	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+GARV_0666	White/Caucasian	Female	83	United States of America	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+GARV_0667	White/Caucasian	Male	76	United States of America	Still Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIA	DOD	
+GARV_0668	White/Caucasian	Male	63	United States of America	Still Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+GARV_0669	White/Caucasian	Female	76	United States of America	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIA	DOD	
+GARV_0670	White/Caucasian	Male	49	United States of America	Still Smoking	Pancreatic Ductal Adenocarcinoma	Body	IIA	DOD	
+GARV_0671	White/Caucasian	Female	49	United States of America	Never Smoked	PDA - Adenosquamous carcinoma	Head	IIA	DOD	
+GARV_0672	White/Caucasian	Male	79	United States of America	Stopped Smoking	Intraductal Papillary Mucinous Neoplasm with invasion	Head	IIB	DOD	
+GARV_0673	White/Caucasian	Female	70	United States of America	Never Smoked	PDA - Adenosquamous carcinoma	Body	IIB	DOD	
+GARV_0674	White/Caucasian	Female	66	United States of America	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Tail	IIA	DOD	
+ICGC_0002	White/Caucasian	Female	77	Australia	Never Smoked	Intraductal Papillary Mucinous Neoplasm with invasion	Tail	IIB	DOD	
+ICGC_0003	White/Caucasian	Female	58	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	NED	
+ICGC_0004	White/Caucasian	Female	78	Australia	Never Smoked	Intraductal Papillary Mucinous Neoplasm with invasion	Head	IIA	DOD	
+ICGC_0005	White/Caucasian	Male	63	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Tail	IIB	DOD	
+ICGC_0006	White/Caucasian	Female	49	Australia	Still Smoking	Pancreatic Ductal Adenocarcinoma	Body	IA	AWD	1307
+ICGC_0007	White/Caucasian	Female	74	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOC	57
+ICGC_0008	White/Caucasian	Male	72	Australia	Stopped Smoking	Intraductal Papillary Mucinous Neoplasm with invasion	Head	IIB	DOD	
+ICGC_0009	White/Caucasian	Male	34	Australia	Never Smoked	PDA - Undifferentiated carcinoma with osteoclast like giant cells	Head	IIA	DOD	404
+ICGC_0010	Asian	Male	55	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOC	
+ICGC_0011	White/Caucasian	Male	62	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIA	NED	
+ICGC_0012	White/Caucasian	Female	60	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0013	White/Caucasian	Male	81	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0015	Asian	Male	65	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0016	White/Caucasian	Female	84	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IV	DOD	
+ICGC_0017	White/Caucasian	Female	72	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0018	White/Caucasian	Male	64	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Body	IIA	DOD	
+ICGC_0019	White/Caucasian	Female	79	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0020	White/Caucasian	Male	57	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	1276
+ICGC_0021	White/Caucasian	Male	60	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	724
+ICGC_0022	White/Caucasian	Female	87	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Body	IIA	DOC	
+ICGC_0023	White/Caucasian	Male	49	Australia	Still Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0024	White/Caucasian	Male	69	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	NED	
+ICGC_0025	White/Caucasian	Male	69	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	353
+ICGC_0026	White/Caucasian	Female	69	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	264
+ICGC_0027	White/Caucasian	Male	64	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Body	IIB	DOD	
+ICGC_0028	White/Caucasian	Female	55	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0029	White/Caucasian	Female	79	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IV	DOD	
+ICGC_0030	White/Caucasian	Female	79	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0031	White/Caucasian	Female	61	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	1091
+ICGC_0032	White/Caucasian	Female	66	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0033	White/Caucasian	Male	51	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	778
+ICGC_0034	White/Caucasian	Female	78	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Tail	IV	DOC	
+ICGC_0035	White/Caucasian	Female	77	Australia	Never Smoked	Intraductal Papillary Mucinous Neoplasm with invasion	Head	IIB	NED	
+ICGC_0036	White/Caucasian	Male	64	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IB	NED	
+ICGC_0037	White/Caucasian	Male	78	Australia	Never Smoked	PDA - Adenosquamous carcinoma	Body	IIB	DOD	156
+ICGC_0038	White/Caucasian	Male	57	Australia	Still Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0039	White/Caucasian	Male	67	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0040	White/Caucasian	Male	77	Australia	Still Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0041	White/Caucasian	Male	74	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	NED	
+ICGC_0042	White/Caucasian	Male	68	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0043	White/Caucasian	Male	52	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0044	White/Caucasian	Female	72	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	NED	
+ICGC_0045	Black/African	Male	76	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOC	
+ICGC_0046	Asian	Male	72	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Body	IB	DOD	
+ICGC_0047	White/Caucasian	Male	71	Australia	Never Smoked	Intraductal Papillary Mucinous Neoplasm with invasion	Head	IIB	NED	
+ICGC_0048	White/Caucasian	Female	65	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIA	NED	1277
+ICGC_0049	White/Caucasian	Male	83	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0050	White/Caucasian	Male	78	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	AWD	
+ICGC_0051	White/Caucasian	Male	66	Australia	Never Smoked	PDA - Adenosquamous carcinoma	Head	IIB	DOD	613
+ICGC_0052	White/Caucasian	Male	76	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIA	NED	1429
+ICGC_0053	White/Caucasian	Female	73	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IV	DOD	618
+ICGC_0054	White/Caucasian	Female	72	Australia	Stopped Smoking	PDA - Adenosquamous carcinoma	Tail	IIA	DOD	88
+ICGC_0055	White/Caucasian	Male	61	Australia	Never Smoked	PDAC-Clear Cell	Tail	IIB	DOD	420
+ICGC_0056	White/Caucasian	Female	61	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	AWD	
+ICGC_0057	White/Caucasian	Male	64	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0058	White/Caucasian	Female	59	Australia	Still Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0059	White/Caucasian	Male	68	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	AWD	1277
+ICGC_0060	White/Caucasian	Male	47	Australia	Stopped Smoking	Intraductal Papillary Mucinous Neoplasm with invasion	Head	IIB	AWD	
+ICGC_0061	White/Caucasian	Female	56	Australia	Never Smoked	PDA - Undifferentiated carcinoma (some multinucleated but not osteoclast)	Head	IIB	DOD	970
+ICGC_0062	White/Caucasian	Male	70	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOC	
+ICGC_0063	White/Caucasian	Male	54	Australia	Stopped Smoking	Intraductal Papillary Mucinous Neoplasm with invasion	Head	IA	NED	1277
+ICGC_0064	White/Caucasian	Male	78	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIA	DOD	
+ICGC_0065	White/Caucasian	Male	63	United States of America	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0066	White/Caucasian	Male	58	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	315
+ICGC_0067	White/Caucasian	Male	64	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	502
+ICGC_0069	White/Caucasian	Female	63	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0071	Black/African	Female	72	Australia	Never Smoked	PDA - Mucinous Non-cystic carcinoma	Head	IIB	DOD	
+ICGC_0072	White/Caucasian	Male	67	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	III	DOD	
+ICGC_0075	White/Caucasian	Female	76	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	482
+ICGC_0076	White/Caucasian	Male	56	Australia	Stopped Smoking	PDA - Undifferentiated (anaplastic) carcinoma	Head	III	DOD	
+ICGC_0077	White/Caucasian	Female	63	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0079	White/Caucasian	Male	68	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0082	White/Caucasian	Female	68	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	III	DOD	
+ICGC_0084	White/Caucasian	Female	60	United States of America	Occasional Smoker	Small Cell Carcinoma	Head	IIB	DOD	
+ICGC_0085	White/Caucasian	Male	54	United States of America	Never Smoked	Pancreatic Ductal Adenocarcinoma	body	IV	DOD	
+ICGC_0086	White/Caucasian	Male	42	United States of America	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IV	DOD	
+ICGC_0087	White/Caucasian	Male	70	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	366
+ICGC_0088	Asian	Male	71	Australia	Never Smoked	PDA - Mucinous Non-cystic carcinoma	Tail	IIA	AWD	1429
+ICGC_0089	White/Caucasian	Female	69	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIA	DOD	
+ICGC_0090	White/Caucasian	Female	72	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIA	DOC	
+ICGC_0092	White/Caucasian	Male	71	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	NED	
+ICGC_0093	Asian	Male	78	Australia	Still Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0094		Female	50	United States of America		PDA - Adenosquamous carcinoma	Tail	IB	DOD	
+ICGC_0095	White/Caucasian	Male	62	Australia	Still Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0096	White/Caucasian	Male	78	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0097	White/Caucasian	Male	64	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOC	
+ICGC_0098	White/Caucasian	Female	76	Australia	Still Smoking	Pancreatic Ductal Adenocarcinoma	Body	III	DOD	
+ICGC_0099	White/Caucasian	Female	80	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIA	DOC	8
+ICGC_0101	White/Caucasian	Female	70	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	AWD	
+ICGC_0102	White/Caucasian	Male	66	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIA	DOD	
+ICGC_0103	White/Caucasian	Female	78	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Tail	IIB	DOD	1088
+ICGC_0104	White/Caucasian	Male	60	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Body	III	DOD	
+ICGC_0105	White/Caucasian	Male	88	Australia	Never Smoked	Intraductal Papillary Mucinous Neoplasm with invasion	Head	IIA	DOD	436
+ICGC_0106		Male	68	Italy	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0107		Male	59	Italy	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0108		Male	72	Italy		Pancreatic Ductal Adenocarcinoma	Head	IIB	Deceased - Of Unknown Cause	429
+ICGC_0109	White/Caucasian	Male	70	Australia	Still Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIA	DOD	912
+ICGC_0110	White/Caucasian	Male	44	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0111	White/Caucasian	Male	63	Australia	Still Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOC	
+ICGC_0112	White/Caucasian	Male	51	Australia	Still Smoking	PDA - Adenosquamous carcinoma	Head	IIA	DOD	
+ICGC_0114	White/Caucasian	Female	65	United States of America	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	506
+ICGC_0115	White/Caucasian	Female	70	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	807
+ICGC_0116	White/Caucasian	Female	67	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0117	White/Caucasian	Female	64	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0118	White/Caucasian	Female	65	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0119	White/Caucasian	Male	36	Australia	Still Smoking	Pancreatic Ductal Adenocarcinoma	Tail	IIB	DOD	
+ICGC_0121	White/Caucasian	Female	53	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0123	Asian	Female	65	Australia	Never Smoked	Intraductal Papillary Mucinous Neoplasm with invasion	Head	IIB	DOD	
+ICGC_0124	White/Caucasian	Male	79	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	158
+ICGC_0125	White/Caucasian	Female	63	Australia	Never Smoked	Intraductal Papillary Mucinous Neoplasm with invasion	Head	IB	DOD	
+ICGC_0131	White/Caucasian	Male	69	Australia	Still Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIA	DOC	
+ICGC_0132	White/Caucasian	Male	65	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0133	White/Caucasian	Female	59	Australia	Still Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	AWD	
+ICGC_0134	White/Caucasian	Male	81	Australia	Stopped Smoking	PDA - Adenosquamous carcinoma	Tail	IIB	DOD	99
+ICGC_0135	Asian	Female	62	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIA	NED	912
+ICGC_0136	White/Caucasian	Male	71	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	AWD	
+ICGC_0137	White/Caucasian	Male	61	Australia	Never Smoked	PDA - Undifferentiated (anaplastic) carcinoma	Head	IV	DOD	
+ICGC_0138	White/Caucasian	Male	77	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	NED	
+ICGC_0139	White/Caucasian	Male	70	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	NED	1034
+ICGC_0140	White/Caucasian	Female	76	Australia	Never Smoked	Intraductal Papillary Mucinous Neoplasm with invasion	Head	IIA	NED	1064
+ICGC_0141	White/Caucasian	Female	75	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Body	IIA	DOD	393
+ICGC_0143	White/Caucasian	Female	68	Australia	Never Smoked	PDA -  signet ring	Head	IIA	NED	912
+ICGC_0144	White/Caucasian	Male	64	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIA	NED	851
+ICGC_0146	White/Caucasian	Male	52	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IB	NED	1064
+ICGC_0147	White/Caucasian	Male	71	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Body	IIB	DOD	
+ICGC_0148	White/Caucasian	Female	62	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	AWD	
+ICGC_0149	White/Caucasian	Female	70	Australia	Never Smoked	Intraductal Papillary Mucinous Neoplasm with invasion	Head	IIA	DOD	1012
+ICGC_0150	White/Caucasian	Male	61	Australia	Never Smoked	Intraductal Papillary Mucinous Neoplasm with invasion	Head	IIA	NED	851
+ICGC_0152	White/Caucasian	Female	76	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0153	White/Caucasian	Female	83	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	417
+ICGC_0154	White/Caucasian	Female	63	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	AWD	
+ICGC_0157	White/Caucasian	Female	62	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIA	NED	
+ICGC_0159	White/Caucasian	Female	43	United States of America	Stopped Smoking	PDA - Adenosquamous carcinoma	Head	IIB	NED	
+ICGC_0162	White/Caucasian	Female	65	United States of America	Still Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	NED	
+ICGC_0164	White/Caucasian	Female	55	United States of America	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0165	White/Caucasian	Male	61	United States of America	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0169	White/Caucasian	Female	77	United States of America	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	AWD	851
+ICGC_0170	White/Caucasian	Female	68	United States of America	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	AWD	
+ICGC_0173	White/Caucasian	Male	55	United States of America	Still Smoking	Pancreatic Ductal Adenocarcinoma	Tail	IIB	DOD	
+ICGC_0174	White/Caucasian	Female	72	United States of America	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	AWD	
+ICGC_0175	Black/African	Female	78	United States of America	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIA	DOD	
+ICGC_0178	White/Caucasian	Male	66	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0179	White/Caucasian	Female	69	Australia	Never Smoked	Mucinous Cystadenocarcinoma	Tail	IIA	AWD	
+ICGC_0180	White/Caucasian	Female	52	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	AWD	
+ICGC_0182	Asian	Female	60	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IB	NED	
+ICGC_0185	Black/African	Female	61	Australia	Still Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	AWD	1003
+ICGC_0187	White/Caucasian	Female	52	Australia		Pancreatic Ductal Adenocarcinoma	Head	IIA	NED	
+ICGC_0188	Asian	Male	72	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Body	IIB	DOD	237
+ICGC_0190	Black/African	Male	67	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0191	White/Caucasian	Male	62	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0192	White/Caucasian	Male	75	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Tail	IIA	DOD	100
+ICGC_0194	White/Caucasian	Female	57	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0195	White/Caucasian	Female	79	Australia		Pancreatic Ductal Adenocarcinoma	Tail	IIB	NED	
+ICGC_0197	White/Caucasian	Female	72	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Tail	IIB	NED	
+ICGC_0199	White/Caucasian	Male	77	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	538
+ICGC_0201	White/Caucasian	Female	72	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	708
+ICGC_0202	White/Caucasian	Male	46	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIA	NED	
+ICGC_0203	Asian	Female	68	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	AWD	
+ICGC_0205	White/Caucasian	Male	59	United States of America	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Tail	IB	DOD	285
+ICGC_0206	White/Caucasian	Female	90	United States of America	Never Smoked	Pancreatic Ductal Adenocarcinoma	Tail	IIB	DOD	110
+ICGC_0207	White/Caucasian	Male	80	United States of America	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IB	DOD	208
+ICGC_0208	White/Caucasian	Male	55	United States of America		Pancreatic Ductal Adenocarcinoma	Body	IIB	DOC	
+ICGC_0209	White/Caucasian	Female	68	United States of America	Still Smoking	Pancreatic Ductal Adenocarcinoma	Head	IA	DOD	
+ICGC_0210	White/Caucasian	Male	71	United States of America	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0212	Asian	Male	57	United States of America	Occasional Smoker	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	602
+ICGC_0214	White/Caucasian	Female	82	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	401
+ICGC_0215	White/Caucasian	Female	79	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Tail	IIA	DOD	720
+ICGC_0216	White/Caucasian	Female	83	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	AWD	
+ICGC_0217	White/Caucasian	Female	70	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	NED	
+ICGC_0219	White/Caucasian	Female	47	Australia	Still Smoking	PDA - Undifferentiated carcinoma with spindling and osteoclast like giant cells	Tail	IA	NED	
+ICGC_0223	White/Caucasian	Female	83	Australia		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	223
+ICGC_0224	Asian	Female	68	Australia	Never Smoked	Intraductal Papillary Mucinous Neoplasm with invasion	Body	IA	NED	669
+ICGC_0225	White/Caucasian	Male	73	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	AWD	
+ICGC_0226	White/Caucasian	Male	58	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	NED	
+ICGC_0227	White/Caucasian	Female	49	Australia	Still Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	289
+ICGC_0228	White/Caucasian	Male	67	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	III	DOD	
+ICGC_0229	White/Caucasian	Male	73	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0230	White/Caucasian	Male	37	Australia	Still Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	255
+ICGC_0234	White/Caucasian	Female	63	Australia	Occasional Smoker	Pancreatic Ductal Adenocarcinoma	Head	IIA	AWD	
+ICGC_0235	Black/African, White/Caucasian	Female	64	Australia	Never Smoked	Intraductal Papillary Mucinous Neoplasm with invasion	Tail	IV	DOD	535
+ICGC_0236	White/Caucasian	Male	76	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IB	AWD	
+ICGC_0238	White/Caucasian	Male	50	Australia	Never Smoked	PDA - Mucinous Non-cystic carcinoma	Head	IIB	DOD	
+ICGC_0239	White/Caucasian	Female	70	Italy		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0240	White/Caucasian	Female	75	Italy		PDAC-Clear Cell	Head	IIA	DOD	
+ICGC_0241	White/Caucasian	Male	80	Italy		Pancreatic Ductal Adenocarcinoma	Head	IIB	NED	
+ICGC_0242	White/Caucasian	Female	68	Italy		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0243	White/Caucasian	Female	73	Italy		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0244	White/Caucasian	Male	71	Italy		Pancreatic Ductal Adenocarcinoma	Head	III	DOD	
+ICGC_0245	White/Caucasian	Female	67	Italy		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0246	White/Caucasian	Male	65	Italy		PDA - Mucinous Non-cystic carcinoma	Head	IIA	DOD	
+ICGC_0247	White/Caucasian	Male	55	Italy		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0251	White/Caucasian	Female	64	Italy		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0252	White/Caucasian	Female	65	Italy		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0253	White/Caucasian	Female	70	Italy		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0254	White/Caucasian	Male	48	Italy		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0255	White/Caucasian	Male	64	Italy		Pancreatic Ductal Adenocarcinoma	Body	IIB	DOD	
+ICGC_0256	White/Caucasian	Male	69	Italy		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0257	White/Caucasian	Male	79	Italy		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOC	
+ICGC_0258	White/Caucasian	Male	62	Italy		Pancreatic Ductal Adenocarcinoma	Head	IA	DOD	
+ICGC_0259	White/Caucasian	Male	56	Italy		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0260	White/Caucasian	Male	60	Italy		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0263	White/Caucasian	Male	46	Italy		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0264	White/Caucasian	Female	67	Italy		Pancreatic Ductal Adenocarcinoma	Head	IIA	DOD	
+ICGC_0265	White/Caucasian	Male	33	Italy		Pancreatic Ductal Adenocarcinoma	Head	III	DOD	
+ICGC_0266	White/Caucasian	Female	59	Italy		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0267	White/Caucasian	Female	75	Italy		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0269	White/Caucasian	Female	72	Italy		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0270	White/Caucasian	Female	54	Italy		Pancreatic Ductal Adenocarcinoma	Head	IIA	DOD	
+ICGC_0271	White/Caucasian	Male	70	Italy		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0273	White/Caucasian	Female	67	Italy		Pancreatic Ductal Adenocarcinoma	Body	IIB	DOD	
+ICGC_0274	White/Caucasian	Male	75	Italy		Pancreatic Ductal Adenocarcinoma	Body	IIB	Alive - Disease Status Unknown	
+ICGC_0275	White/Caucasian	Male	58	Italy		Pancreatic Ductal Adenocarcinoma	Body	IIB	Alive - Disease Status Unknown	
+ICGC_0276	White/Caucasian	Male	67	Italy		Pancreatic Ductal Adenocarcinoma	Body	IIB	Alive - Disease Status Unknown	
+ICGC_0277	White/Caucasian	Male	72	Italy		Pancreatic Ductal Adenocarcinoma	Head	IIB	Alive - Disease Status Unknown	
+ICGC_0278	White/Caucasian	Female	55	Italy		Pancreatic Ductal Adenocarcinoma	Body	IIB	Alive - Disease Status Unknown	
+ICGC_0279	White/Caucasian	Male	78	Italy		Pancreatic Ductal Adenocarcinoma	Head	IIB	Alive - Disease Status Unknown	
+ICGC_0280	White/Caucasian	Male	70	Italy		Pancreatic Ductal Adenocarcinoma	Head	IIB	Alive - Disease Status Unknown	
+ICGC_0282	White/Caucasian	Female	65	Italy		Pancreatic Ductal Adenocarcinoma	Body	IIB	Alive - Disease Status Unknown	
+ICGC_0283	White/Caucasian	Female	69	Italy		Pancreatic Ductal Adenocarcinoma	Head	IIB	Alive - Disease Status Unknown	
+ICGC_0285	White/Caucasian	Female	75	Italy		PDA - Undifferentiated (anaplastic) carcinoma	Head	IIB	DOC	
+ICGC_0286	White/Caucasian	Male	71	Italy		PDA - Mucinous Non-cystic carcinoma	Head	IA	DOD	
+ICGC_0288	White/Caucasian	Female	51	Italy		Pancreatic Ductal Adenocarcinoma	Head	IIB	AWD	
+ICGC_0289	White/Caucasian	Female	68	Italy		Pancreatic Ductal Adenocarcinoma	Head	IIB	AWD	
+ICGC_0290	White/Caucasian	Male	76	Italy		Pancreatic Ductal Adenocarcinoma	Head	IIA	NED	
+ICGC_0291										
+ICGC_0292	White/Caucasian	Female	71	Italy		Pancreatic Ductal Adenocarcinoma	Body	IIA	Alive - Disease Status Unknown	
+ICGC_0294	White/Caucasian	Female	60	Italy		Pancreatic Ductal Adenocarcinoma	Body	IV	Alive - Disease Status Unknown	
+ICGC_0295	White/Caucasian	Male	60	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	NED	638
+ICGC_0296	White/Caucasian	Male	75	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIA	NED	730
+ICGC_0300	White/Caucasian	Female	72	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIA	NED	669
+ICGC_0301	Asian	Male	68	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	NED	547
+ICGC_0302	White/Caucasian	Male	65	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	AWD	
+ICGC_0303	White/Caucasian	Female	78	Australia	Never Smoked	Intraductal Papillary Mucinous Neoplasm with invasion	Head	IV	DOD	204
+ICGC_0304	White/Caucasian	Female	67	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	NED	730
+ICGC_0305	White/Caucasian	Male	73	Australia	Still Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	NED	
+ICGC_0307	White/Caucasian	Male	76	United States of America	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0308	White/Caucasian	Male	60	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	AWD	
+ICGC_0309	White/Caucasian	Female	74	Australia	Never Smoked	Intraductal Papillary Mucinous Neoplasm with invasion	Head	IIA	DOD	298
+ICGC_0310	White/Caucasian	Male	64	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0311	White/Caucasian	Male	78	Australia		Pancreatic Ductal Adenocarcinoma	Head	IIB	AWD	
+ICGC_0312	White/Caucasian	Male	56	Australia	Still Smoking	Pancreatic Ductal Adenocarcinoma	Tail	IIB	DOD	429
+ICGC_0313	White/Caucasian	Female	77	Australia	Stopped Smoking	PDA - Adenosquamous carcinoma	Head	IV	NED	517
+ICGC_0314	White/Caucasian	Female	79	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOC	
+ICGC_0315	Asian	Female	58	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	III	DOD	222
+ICGC_0316	White/Caucasian	Female	60	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	III	DOC	
+ICGC_0317	White/Caucasian	Male	90	United States of America	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0318	White/Caucasian	Male	77	United States of America	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0319	White/Caucasian	Male	64	United States of America	Stopped Smoking	PDA - Adenosquamous carcinoma	Tail	IIB	DOD	
+ICGC_0320	Black/African	Female	66	United States of America	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Tail	IV	DOD	
+ICGC_0321	White/Caucasian	Male	64	United States of America	Still Smoking	Pancreatic Ductal Adenocarcinoma	Head	IB	NED	1155
+ICGC_0322	White/Caucasian	Male	70	United States of America	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	AWD	
+ICGC_0323	White/Caucasian	Female	45	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0324	White/Caucasian	Male	71	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Tail	IIB	DOD	
+ICGC_0326	White/Caucasian	Female	86	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Tail	IIA	DOD	274
+ICGC_0327						Pancreatic Ductal Adenocarcinoma				
+ICGC_0328						Pancreatic Ductal Adenocarcinoma				
+ICGC_0329						Pancreatic Ductal Adenocarcinoma				
+ICGC_0336	White/Caucasian	Female	72	United States of America	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0337	White/Caucasian	Male	45	Australia	Still Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0338	White/Caucasian	Male	71	United States of America	Stopped Smoking	Acinar Cell Carcinoma	Tail	IIB	DOD	629
+ICGC_0339	White/Caucasian	Male	75	United States of America	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0340	White/Caucasian	Female	78	United States of America	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0341	White/Caucasian	Male	65	Australia	Still Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	AWD	
+ICGC_0342	White/Caucasian	Male	68	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIA	DOD	
+ICGC_0343	White/Caucasian	Female	61	United States of America	Never Smoked	Intraductal Papillary Mucinous Neoplasm with invasion	Head	IIB	DOD	
+ICGC_0345	White/Caucasian	Female	83	United States of America	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIA	DOD	
+ICGC_0346		Male	64	United States of America	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	Deceased - Of Unknown Cause	
+ICGC_0347	White/Caucasian	Male	60	United States of America	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIA	NED	
+ICGC_0349	White/Caucasian	Female	83	United States of America	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0350	White/Caucasian	Male	61	United States of America	Still Smoking	PDA - Adenosquamous carcinoma	Tail	IB	DOD	
+ICGC_0351	White/Caucasian	Female	87	Australia		PDA - Mixed ductal endocrine carcinoma	Head	IIA	NED	
+ICGC_0352	White/Caucasian	Female	76	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	NED	
+ICGC_0354	White/Caucasian	Male	49	Australia	Still Smoking	Pancreatic Ductal Adenocarcinoma	Head	IV	DOD	109
+ICGC_0358	White/Caucasian	Male	66	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IV	DOD	
+ICGC_0360	White/Caucasian	Male	68	Australia		PDAC-Clear Cell	Head	IIB	AWD	
+ICGC_0361	White/Caucasian	Male	55	Australia		Pancreatic Ductal Adenocarcinoma	Head	IIB	AWD	
+ICGC_0362	Asian	Female	59	Australia		Pancreatic Ductal Adenocarcinoma	Tail	IV	AWD	
+ICGC_0363	White/Caucasian	Female	65	Australia		Pancreatic Ductal Adenocarcinoma	Head	IIB	NED	
+ICGC_0364	White/Caucasian	Female	76	Australia		Pancreatic Ductal Adenocarcinoma	Body	IIB	NED	
+ICGC_0365	White/Caucasian	Male	50	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	NED	334
+ICGC_0366	White/Caucasian	Female	74	Germany	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0367	White/Caucasian	Male	63	Germany	Never Smoked	Pancreatic Ductal Adenocarcinoma	Tail	IIB	DOD	
+ICGC_0368	White/Caucasian	Male	71	Germany	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0369		Female	76	Germany	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIA	DOD	
+ICGC_0370	White/Caucasian	Male	67	Germany	Never Smoked	Intraductal Papillary Mucinous Neoplasm with invasion	Head	IIB	DOD	
+ICGC_0371	White/Caucasian	Female	58	Germany	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0372	White/Caucasian	Female	68	Germany	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	NED	
+ICGC_0373		Male	64	Germany	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	NED	
+ICGC_0374	White/Caucasian	Male	68	Germany	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIA	DOD	
+ICGC_0375		Male	70	Germany	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	NED	
+ICGC_0376	White/Caucasian	Female	68	Germany	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIA	DOD	
+ICGC_0377	White/Caucasian	Male	74	Germany	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0378	White/Caucasian	Male	65	Germany	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOC	
+ICGC_0380		Male	70	Germany	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOC	
+ICGC_0381		Female	78	Germany	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0382	White/Caucasian	Male		Germany	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIA	AWD	
+ICGC_0383	White/Caucasian	Female	69	Germany	Never Smoked	Intraductal Papillary Mucinous Neoplasm with invasion	Head	IIA	NED	
+ICGC_0384	White/Caucasian	Female	74	Germany	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIA	Deceased - Of Unknown Cause	
+ICGC_0385	White/Caucasian	Male	69	Germany	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	AWD	
+ICGC_0386	White/Caucasian	Female	80	Germany	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIA	DOD	
+ICGC_0387	White/Caucasian	Male	63	Germany	Still Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIA	NED	
+ICGC_0388	White/Caucasian	Female	68	Germany	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIA	NED	
+ICGC_0389	White/Caucasian	Female	61	Germany	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	AWD	
+ICGC_0391	White/Caucasian	Male	64	Australia	Never Smoked	Acinar Cell Carcinoma	Head	IIB	DOD	480
+ICGC_0392		Male	50	United States of America		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	331
+ICGC_0393	White/Caucasian	Male	60	United States of America	Stopped Smoking	PDA - Adenosquamous carcinoma	Head	IB	NED	85
+ICGC_0394		Male	62	United States of America	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0395	White/Caucasian	Female	68	Australia	Never Smoked	Intraductal Papillary Mucinous Neoplasm with invasion	Head	IA	DOD	261
+ICGC_0396	White/Caucasian	Male	53	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	NED	
+ICGC_0398	Asian	Male	66	United States of America		Pancreatic Ductal Adenocarcinoma	Head	IIB	AWD	
+ICGC_0399	White/Caucasian	Female	55	United States of America	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIA	DOD	
+ICGC_0401		Female	59	United States of America		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0402	White/Caucasian	Male	79	United States of America	Still Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	NED	
+ICGC_0403	White/Caucasian	Male	76	United States of America	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Tail	IIB	DOD	
+ICGC_0404	White/Caucasian	Female	57	Australia	Never Smoked	Intraductal Papillary Mucinous Neoplasm with invasion	Body	IIB	DOC	
+ICGC_0405	White/Caucasian	Female	65	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	AWD	
+ICGC_0406	White/Caucasian	Female	46	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIA	NED	426
+ICGC_0407	White/Caucasian	Female	68	Australia		Pancreatic Ductal Adenocarcinoma	Head	IIB	AWD	
+ICGC_0408	White/Caucasian	Female	62	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	NED	
+ICGC_0411	Pacific Islander	Male	67	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	AWD	
+ICGC_0412	White/Caucasian	Female	77	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	NED	395
+ICGC_0414	White/Caucasian	Female	86	Australia		Pancreatic Ductal Adenocarcinoma	Head	IIB	NED	
+ICGC_0415	Asian, White/Caucasian	Female	55	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	NED	313
+ICGC_0416		Female	83	Australia	Stopped Smoking	Intraductal Papillary Mucinous Neoplasm with invasion	Tail	IIB	AWD	
+ICGC_0417	Asian	Male	65	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIA	AWD	456
+ICGC_0418	Asian	Female	57	Australia	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	AWD	
+ICGC_0419	White/Caucasian	Female	67	Australia	Never Smoked	Intraductal Papillary Mucinous Neoplasm with invasion	Head	IIB	AWD	365
+ICGC_0420	White/Caucasian	Male	74	Australia	Still Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	198
+ICGC_0422	White/Caucasian	Female	56	Australia	Still Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	NED	
+ICGC_0423	White/Caucasian	Female	78	Australia		Pancreatic Ductal Adenocarcinoma	Tail	IIB	DOD	
+ICGC_0462		Male	69	United States of America	Smoker	Pancreatic Ductal Adenocarcinoma	Tail	IIB	DOD	319
+ICGC_0464		Female	46	United States of America	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0465		Female	64	United States of America	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	Alive - Disease Status Unknown	1606
+ICGC_0467		Male	64	United States of America	Smoker	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOC	1262
+ICGC_0468		Female	67	United States of America	Never Smoked	Pancreatic Ductal Adenocarcinoma	Tail	IIB	DOD	128
+ICGC_0469		Female	78	United States of America	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIA	Alive - Disease Status Unknown	1529
+ICGC_0470		Male	75	United States of America	Never Smoked	Pancreatic Ductal Adenocarcinoma	Tail	IIB	DOD	461
+ICGC_0472		Male	72	United States of America	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	543
+ICGC_0474		Male	81	United States of America	Smoker	Pancreatic Ductal Adenocarcinoma	Head	IIA	DOD	279
+ICGC_0476		Male	61	United States of America	occasional smoker	Pancreatic Ductal Adenocarcinoma	Head	IIA	DOD	518
+ICGC_0477		Male	78	United States of America	Smoker	PDA - Adenosquamous carcinoma	Tail	IIB	DOD	203
+ICGC_0478		Male	76	United States of America	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	Alive - Disease Status Unknown	379
+ICGC_0479		Male	60	United States of America	Smoker	Pancreatic Ductal Adenocarcinoma	Head	IIB	Alive - Disease Status Unknown	84
+ICGC_0480		Male	55	United States of America	Never Smoked	Pancreatic Ductal Adenocarcinoma	Tail	IIA	Alive - Disease Status Unknown	44
+ICGC_0481		Female	69	United States of America	Never Smoked	Pancreatic Ductal Adenocarcinoma	Tail	IIB	Alive - Disease Status Unknown	545
+ICGC_0482		Female	66	United States of America	Smoker	Pancreatic Ductal Adenocarcinoma	Head	IIB	Alive - Disease Status Unknown	44
+ICGC_0483		Male	40	United States of America	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	Alive - Disease Status Unknown	46
+ICGC_0484		Male	68	United States of America	Smoker	PDA - Adenosquamous carcinoma	Head	IIB	DOD	177
+ICGC_0485		Female	78	United States of America	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	Alive - Disease Status Unknown	168
+ICGC_0486	White/Caucasian	Female	77	Australia	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	152
+ICGC_0488	White/Caucasian	Male	78	United States of America	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Body	IB	AWD	
+ICGC_0493	White/Caucasian	Female	80	Australia		Pancreatic Ductal Adenocarcinoma	Head	IIA	DOD	
+ICGC_0499	White/Caucasian	Female	86	Australia	Stopped Smoking	Mucinous Cystadenocarcinoma	Body	IV	DOD	
+ICGC_0502	White/Caucasian	Female	60	United Kingdom		Intraductal Papillary Mucinous Neoplasm with invasion	Head	IIB	DOD	1043
+ICGC_0503	White/Caucasian	Female	74	United Kingdom		Pancreatic Ductal Adenocarcinoma	Head	IIB	NED	836
+ICGC_0504	White/Caucasian	Male	68	United Kingdom		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0505	White/Caucasian	Male	68	United Kingdom		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0507	White/Caucasian	Male	77	United Kingdom		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	1532
+ICGC_0508	White/Caucasian	Female	61	United Kingdom		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0509	White/Caucasian	Male	59	United Kingdom		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0510	White/Caucasian	Male	66	United Kingdom		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0511	White/Caucasian	Male	70	United Kingdom		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0512	White/Caucasian	Female	61	United Kingdom		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0513	White/Caucasian	Male	52	United Kingdom		Intraductal Papillary Mucinous Neoplasm with invasion	Head	IIB	DOD	
+ICGC_0518	White/Caucasian	Male	58	United Kingdom		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOC	27
+ICGC_0520	White/Caucasian	Male	56	United Kingdom		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0521	White/Caucasian	Female	51	United Kingdom		Pancreatic Ductal Adenocarcinoma	Tail	IV	DOD	429
+ICGC_0522	White/Caucasian	Female	56	United Kingdom		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	456
+ICGC_0523	White/Caucasian	Male	76	United Kingdom		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOC	
+ICGC_0524	White/Caucasian	Male	59	United Kingdom		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0526	White/Caucasian	Male	60	United Kingdom		Pancreatic Ductal Adenocarcinoma	Head	IIA	DOC	1
+ICGC_0527	White/Caucasian	Male	62	United Kingdom		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0528	White/Caucasian	Female	59	United Kingdom		Pancreatic Ductal Adenocarcinoma	Head	IIA	NED	
+ICGC_0529	White/Caucasian	Male	66	United Kingdom		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0530	White/Caucasian	Male	69	United Kingdom		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0531	White/Caucasian	Female	68	United Kingdom		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0532	White/Caucasian	Male	59	Germany	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	
+ICGC_0535	White/Caucasian	Female	40	Australia		Pancreatic Ductal Adenocarcinoma	Head	IIB	AWD	286
+ICGC_0536	White/Caucasian	Male	58	Australia	Still Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	173
+ICGC_0542	White/Caucasian	Male	55	Australia	Still Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	AWD	
+ICGC_0543	White/Caucasian	Male	67	Australia	Stopped Smoking	PDA - Adenosquamous carcinoma	Tail	IIA	DOD	158
+ICGC_0548	White/Caucasian	Female	74	Germany	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IB	AWD	
+ICGC_0549	White/Caucasian	Male	78	Germany	Never Smoked	Pancreatic Ductal Adenocarcinoma	Body	IIA	DOD	
+JD13D		Male	59	United States of America		Pancreatic Ductal Adenocarcinoma		Unknown	Unknown	
+JH011		Male	78	United States of America		Pancreatic Ductal Adenocarcinoma		Unknown	Unknown	
+JH024		Male	64	United States of America		Pancreatic Ductal Adenocarcinoma		Unknown	Unknown	
+JH029		Female	70	United States of America		Pancreatic Ductal Adenocarcinoma		Unknown	Unknown	
+JH033		Male	60	United States of America		Pancreatic Ductal Adenocarcinoma		Unknown	Unknown	
+PA018		NA	NA	Japan		Pancreatic Ductal Adenocarcinoma		Unknown	Unknown	
+PA028		NA	NA	Japan		Pancreatic Ductal Adenocarcinoma		Unknown	Unknown	
+PA055		NA	NA	Japan		Pancreatic Ductal Adenocarcinoma		Unknown	Unknown	
+PA086		NA	NA	Japan		Pancreatic Ductal Adenocarcinoma		Unknown	Unknown	
+PA090		NA	NA	Japan		Pancreatic Ductal Adenocarcinoma		Unknown	Unknown	
+PA107		NA	NA	Japan		Pancreatic Ductal Adenocarcinoma		Unknown	Unknown	
+PA122		NA	NA	Japan		Pancreatic Ductal Adenocarcinoma		Unknown	Unknown	
+PA167		NA	NA	Japan		Pancreatic Ductal Adenocarcinoma		Unknown	Unknown	
+PA182		NA	NA	Japan		Pancreatic Ductal Adenocarcinoma		Unknown	Unknown	
+PA195		NA	NA	Japan		Pancreatic Ductal Adenocarcinoma		Unknown	Unknown	
+PA202		NA	NA	Japan		Pancreatic Ductal Adenocarcinoma		Unknown	Unknown	
+PA215		NA	NA	Japan		Pancreatic Ductal Adenocarcinoma		Unknown	Unknown	
+PA254		NA	NA	Japan		Pancreatic Ductal Adenocarcinoma		Unknown	Unknown	
+PA285		NA	NA	Japan		Pancreatic Ductal Adenocarcinoma		Unknown	Unknown	
+PA333		NA	NA	Japan		Pancreatic Ductal Adenocarcinoma		Unknown	Unknown	
+PACA-2440-T		Male	66	United States of America	Smoker	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	1102
+PACA-44-T		Female	64	United States of America	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	267
+PACA-55-T		Male	62	United States of America	Smoker	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	1078
+PACA-59-T		Female	56	United States of America	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	527
+PACA-73-T		Male	66	United States of America	Smoker	Mucinous Cystadenocarcinoma	Tail	IB	Alive - Disease Status Unknown	254
+PANC-253		Female	53	United States of America		Pancreatic Ductal Adenocarcinoma		Unknown	Unknown	
+PANC-140		Male	74	United States of America		Pancreatic Ductal Adenocarcinoma		Unknown	Unknown	
+PANC-185		Female	85	United States of America		Pancreatic Ductal Adenocarcinoma		Unknown	Unknown	
+PANC-194		Female	57	United States of America		Pancreatic Ductal Adenocarcinoma		Unknown	Unknown	
+PANC-198		Male	69	United States of America		Pancreatic Ductal Adenocarcinoma		Unknown	Unknown	
+PANC-2.5		Female	53	United States of America		Pancreatic Ductal Adenocarcinoma		Unknown	Unknown	
+PANC-215		Female	60	United States of America		Pancreatic Ductal Adenocarcinoma		Unknown	Unknown	
+PANC-247		Male	81	United States of America		Pancreatic Ductal Adenocarcinoma		Unknown	Unknown	
+PCSI0001		Female	65	Canada	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	AWD	366
+PCSI0002		Female	79	Canada	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	285
+PCSI0007		Male	75	Canada	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIA	DOD	235
+PCSI0010		Male	88	Canada		Pancreatic Ductal Adenocarcinoma	Tail	IIB	AWD	986
+PCSI0018		Female	77	Canada		Pancreatic Ductal Adenocarcinoma	Head	IIB	Alive - Disease Status Unknown	940
+PCSI0019		Male	63	Canada		Pancreatic Ductal Adenocarcinoma	Head	IIB	Alive - Disease Status Unknown	911
+PCSI0022		Male	78	Canada	Stopped Smoking	Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	233
+PCSI0023		Female	63	Canada	Never Smoked	Pancreatic Ductal Adenocarcinoma	Head	IIB	AWD	0
+PCSI0024		Female	69	Canada	Never Smoked	Pancreatic Ductal Adenocarcinoma	Tail	IIB	DOD	247
+PCSI0044		Male	69	Canada		Pancreatic Ductal Adenocarcinoma	Head	IIB	Deceased - Of Unknown Cause	243
+PCSI0046		Male	74	Canada		Pancreatic Ductal Adenocarcinoma	Head	IIB	Deceased - Of Unknown Cause	274
+PCSI0047		Male	55	Canada		Pancreatic Ductal Adenocarcinoma	Head	III	DOD	17
+PCSI0048		Male	76	Canada		Pancreatic Ductal Adenocarcinoma	Head	IIB	DOD	61
+PCSI0072		Male	83	Canada		Pancreatic Ductal Adenocarcinoma	Head	IIB	Alive - Disease Status Unknown	44
+PCSI0073		Male	69	Canada		Pancreatic Ductal Adenocarcinoma	Head	IIA	Alive - Disease Status Unknown	303
+TS-0111		Female	53	United States of America		Pancreatic Ductal Adenocarcinoma		Unknown	Unknown	
