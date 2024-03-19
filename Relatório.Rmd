@@ -1,0 +1,40 @@
+---
+title: "Trabalho ECDB"
+output: 
+  html_document:
+    align: justify
+date: "`r format(Sys.Date(), '%Y-%m-%d')`"
+---
+
+<style>
+body {
+    text-align: justify;
+}
+</style>
+
+
+## Explicação, origem e relevância dos dados
+
+
+O cancro do pâncreas é a quarta principal causa de mortalidade no mundo ocidental e, consequentemente, há uma urgência em compreender melhor a sua patologia molecular. Os dados analisados fazem parte de um estudo que integrou a análise genética de 456 casos de adenocarcinomas ductais pancreáticos. As amostras foram recolhidas de 382 participantes, selecionados pela Australian Pancreatic Cancer Genome Initiative, com a adição de 74 amostras de exomas de cancro pancreático previamente publicados, para ampliar o espectro de análise. O objetivo era identificar os mecanismos subjacentes às mutações e eventos genéticos cruciais para a carcinogénese pancreática, realizando a análise de padrões comuns e diferenças significativas entre as amostras. A relevância dos dados passa pela identificação de oportunidades para o desenvolvimento de terapias para o tratamento da patologia em questão (Bailey et al., 2016).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### Referências:
+
+Bailey, P., Chang, D. K., Nones, K., Johns, A. L., Patch, A. M., Gingras, M. C., Miller, D. K., Christ, A. N., Bruxner, T. J. C., Quinn, M. C., Nourse, C., Murtaugh, L. C., Harliwong, I., Idrisoglu, S., Manning, S., Nourbakhsh, E., Wani, S., Fink, L., Holmes, O., … Grimmond, S. M. (2016). Genomic analyses identify molecular subtypes of pancreatic cancer. Nature, 531(7592), 47–52. https://doi.org/10.1038/nature16965
