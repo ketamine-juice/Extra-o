@@ -1,0 +1,64 @@
+
+```{r}
+# Carregamento dos dados do estudo
+library(cBioPortalData)
+id = "paad_qcmg_uq_2016"
+paad = cBioDataPack(id)
+```
+
+```{r}
+# Verificação do ficheiro
+experiments(paad)
+```
+```{r}
+assays(paad)
+names(assays(paad))
+```
+Trecho sobre normalização
+
+"For downstream analyses, normalized RSEM data were converted to counts per million (c.p.m.) and log2 transformed35. Genes without at least 1 c.p.m. in 20% of the sample were excluded from further analysis." [ref](https://www.nature.com/articles/nature16965)
+
+```{r}
+# Data set já contém dados standardizados, iremos utilizar esses dados
+# ensaio nome "mrna_seq_v2_rsem_zscores_ref_all_samples"
+# os dados apresentados já estão normalizados em CPM de acordo com os autores
+
+
+paad_expr_data = as.data.frame(
+  assays(paad)["mrna_seq_v2_rsem_zscores_ref_all_samples"]$mrna_seq_v2_rsem_zscores_ref_all_samples
+)
+head(paad_expr_data)
+tail(paad_expr_data)
+```
+
+```{r}
+# carregamento de metadados
+
+meta_paad = as.data.frame(
+  colData(paad)
+)
+head(meta_paad)
+tail(meta_paad)
+```
+
+```{r}
+# Verificamos a estrutura dos dados
+
+length(colnames(paad_expr_data))
+length(meta_paad$SAMPLE_ID)
+
+# Nem todas as amostras estão incluídas na expressão genética por isso é necessário aparar os metadados
+meta_paad = subset(meta_paad, meta_paad$SAMPLE_ID %in% colnames(paad_expr_data))
+
+length(colnames(paad_expr_data)) == length(meta_paad$SAMPLE_ID)
+
+
+```
+
+```{r}
+# Estatísticas sumárias
+
+summary(paad_expr_data)
+
+```
+

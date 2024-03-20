@@ -74,6 +74,9 @@ expr = as.data.frame(expr$mrna_seq_v2_rsem)
 expr
 
 meta = as.data.frame(colData(paad))
+meta
+
+
 
 ```
 
