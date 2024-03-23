@@ -10,6 +10,7 @@ paad = cBioDataPack(id)
 # Verificar se objeto foi carregado corretamente
 experiments(paad)
 ```
+
 ```{r}
 # Explorar conteúdo do objeto
 assays(paad)
@@ -24,8 +25,15 @@ Trecho sobre normalização
 # ensaio nome "mrna_seq_v2_rsem_zscores_ref_all_samples"
 # os dados apresentados já estão normalizados em CPM de acordo com os autores
 
+# dados de expressão já preparados por RSEM
 
-paad_expr_data = as.data.frame(
+expr = as.data.frame(
+  assays(paad)["mrna_seq_v2_rsem"]$mrna_seq_v2_rsem
+)
+
+# normalizada com z-score
+
+exprz = as.data.frame(
   assays(paad)["mrna_seq_v2_rsem_zscores_ref_all_samples"]$mrna_seq_v2_rsem_zscores_ref_all_samples
 )
 #head(paad_expr_data)
@@ -44,62 +52,66 @@ remove_na <- function(df) {
   return(df)
 }
 
-paad_expr_data = remove_na(paad_expr_data)
+expr = remove_na(expr)
+exprz = remove_na(exprz)
 
-```
-
-```{r}
 # carregamento de metadados
 # verificação de dados omissos
 
-meta_paad = as.data.frame(
+meta = as.data.frame(
   colData(paad)
 )
 
 #head(meta_paad)
 #tail(meta_paad)
 
-```
-
-```{r}
 # Proponho análise comparativa por tumour grade (hábitos de fumo tb podem ser interessantes)
 
 # Vamos remover todas as outras colunas e manter apenas sample_id e tumour grade
-which(names(meta_paad) %in% c("SAMPLE_ID","TUMOR_GRADE"))
-meta_paad = meta_paad[,c(2,5)]
+which(names(meta) %in% c("SAMPLE_ID","TUMOR_GRADE"))
+meta = meta[,c(2,5)]
 
-meta_paad = remove_na(meta_paad)
-meta_paad
+meta = remove_na(meta)
+#meta_paad
+
 ```
 
 
 ```{r}
 
 # Verif. se todas as samples estão representadas
-length(colnames(paad_expr_data)) == length(meta_paad$SAMPLE_ID)
-length(colnames(paad_expr_data))
+#length(colnames(paad_expr_data)) == length(meta_paad$SAMPLE_ID)
+#length(colnames(paad_expr_data))
 
 # Nem todas as amostras estão incluídas na expressão genética por isso é necessário aparar os metadados
-meta_paad = subset(meta_paad, meta_paad$SAMPLE_ID %in% colnames(paad_expr_data))
+meta = subset(meta, meta$SAMPLE_ID %in% colnames(expr))
 
 # Verificamos o sucesso da operação
-length(colnames(paad_expr_data)) == length(meta_paad$SAMPLE_ID)
+#length(colnames(paad_expr_data)) == length(meta_paad$SAMPLE_ID)
 
 # Verificamos se a ordem é a mesma
-all(colnames(paad_expr_data) == meta_paad$SAMPLE_ID)
+#all(colnames(paad_expr_data) == meta_paad$SAMPLE_ID)
 
 # Não é por isso precisamos reorganizar
 
-paad_expr_data = paad_expr_data[,meta_paad$SAMPLE_ID]
+expr = expr[,meta$SAMPLE_ID]
+exprz = exprz[,meta$SAMPLE_ID]
 
 # Verificamos o sucesso
-all(colnames(paad_expr_data) == meta_paad$SAMPLE_ID)
+#all(colnames(paad_expr_data) == meta_paad$SAMPLE_ID)
 ```
 
 ```{r}
-library(edgeR)
 
-sum(paad_expr_data < 0)
+# Análise exploratória
+
+library(pheatmap)
+library(limma)
+#pheatmap(expr, cluster_rows = FALSE)
+
+summary(exprz)
+
+
 
 ```
 
