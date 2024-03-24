@@ -1,3 +1,65 @@
+---
+title: "Trabalho prático de Extração de Conhecimento de Dados Biológicos"
+output: html_document
+date: `r format(Sys.time(), '%Y-%m-%d')`"
+---
+
+## Explicação dos dados, sua origem e relevância
+
+
+### Instalação dos packages necessários
+
+Em primeiro lugar, procedemos à instalação dos packages necessários para realizar a análise da expressão diferencial. 
+
+```{r}
+
+  ## edgeR
+
+#if (!require("BiocManager", quietly = TRUE))
+#    install.packages("BiocManager")
+
+#BiocManager::install("edgeR")
+
+
+  ## limma 
+
+#BiocManager::install("limma")
+
+
+  ## Glimma
+
+#BiocManager::install(c("Glimma"))
+
+
+  ##gplots
+
+#BiocManager::install(c("gplots"))
+
+
+  ##org.Mm.eg.db
+
+#BiocManager::install(c("org.Mm.eg.db"))
+
+
+  ##RColorBrewer
+
+#BiocManager::install(c("RColorBrewer"))
+
+
+  ##TCGAbiolinks
+
+#if (!requireNamespace("TCGAbiolinks", quietly = TRUE))
+#  BiocManager::install("TCGAbiolinks")
+
+  ##DESeq2
+
+#BiocManager::install("DESeq2")
+
+
+```
+
+
+
 ```{r}
 library(edgeR)
 library(limma)
