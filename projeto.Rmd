@@ -4,10 +4,12 @@ output: html_document
 date: `r format(Sys.time(), '%Y-%m-%d')`"
 ---
 
-## Explicação dos dados, sua origem e relevância
+### Explicação dos dados, sua origem e relevância
 
 
-### Instalação dos packages necessários
+### Tarefas de preparação e de pré-processamento dos dados 
+
+#### Instalação e carregamento dos packages necessários
 
 Em primeiro lugar, procedemos à instalação dos packages necessários para realizar a análise da expressão diferencial. 
 
@@ -58,7 +60,7 @@ Em primeiro lugar, procedemos à instalação dos packages necessários para rea
 
 ```
 
-
+De seguida, foi efetuado o carregamento das bibliotecas que haviam sido instaladas. 
 
 ```{r}
 library(edgeR)
@@ -71,8 +73,17 @@ library(TCGAbiolinks)
 library(DESeq2)       
 ```
 
+
+
+#### Transferência e carregamento dos ficheiros necessários 
+
+* Transferência dos ficheiros de expressão genética associados ao dataset
+
+Para a transferência do dataset do conjunto de dados de expressão genética, utilizou-se o pacote TCGAbiolinks, que é uma ferramenta que permite aceder e descarregar dados do The Cancer Genome Atlas (TCGA). Na query, definimos a procura específica dos dados do projeto TCGA-LUAD, a categoria dos mesmos é do tipo "Perfil do Transcriptoma" e a estratégia experimental utilizada para gerar esses dados é a RNA-Seq. Os dados foram processados utilizando o algoritmo STAR para alinhamento de sequências, resultando em contagens de leitura para cada gene. Portanto, o parâmetro "workflow.type" foi especificado como "STAR - Counts". Por fim, especificamos que queremos ter acesso aos dados que estão disponíveis publicamente através do parâmetro "access".
+
+
 ```{r}
-# Query para chegar ao estudo e transferir ficheiros
+
 luad = GDCquery( 
   project = "TCGA-LUAD",
   data.category = "Transcriptome Profiling",
@@ -81,7 +92,14 @@ luad = GDCquery(
   access = "open"
 )
 
-# Query para chegar aos dados clínicos, transferir e reservar
+GDCdownload(luad)
+
+```
+
+* Transferência dos dados clínicos associados ao dataset (metadados)
+
+
+```{r}
 
 clin = GDCquery(
   project = 'TCGA-LUAD',
@@ -90,33 +108,53 @@ clin = GDCquery(
   data.format = 'BCR Biotab'
 )
 
-# Transferir ficheiros
-GDCdownload(luad)
 GDCdownload(clin)
 ```
 
-Carregamento dos ficheiros
+* Carregamento dos ficheiros
 
 ```{r}
-# Carregamos os dados do estudo e os dados clínicos
+
+# Carregamos os dados de expressão genética e dos dados clínicos
+
 luad_data = GDCprepare(luad, summarizedExperiment = TRUE)
 clin_data = GDCprepare(clin)
+
 ```
 
+#### Preparação dos dados
+
+Para chegar à estrutura desejável dos dados, realizou-se a transformação do dataset em dataframe a partir dos dados em bruto. 
+
 ```{r}
-library(dplyr)
-# Carregamos os dados RNASeq 
+
+#library(dplyr) ISTO ESTÁ ONDE?
+
+# Carregamento, extração e transformação dos dados provenientes do RNAseq 
 seqdata = as.data.frame(assay(luad_data, 'unstranded'))
+
+```
+
+De seguida, foi feita uma filtração das colunas do dataframe `seqdata` para manter apenas as amostras que possuem informações sobre o estágio do tumor, verificando se os valores da coluna `paper_Tumor.stage` não são NA (não disponíveis). O resultado é armazenado na variável `data_de`, que conterá apenas as colunas de `seqdata` associadas a amostras com informações sobre o estágio do tumor.  
+
+
+```{r}
 
 # Limitar ao tumour stage (alterar se necessário)
 data_de = seqdata[,!is.na(luad_data$paper_Tumor.stage)]
 
+```
+
+Por fim, 
+
+```{r}
 # Metadados
 ids = subset(luad_data$patient, !is.na(luad_data$paper_Tumor.stage))
 tsage = subset(luad_data$paper_Tumor.stage, !is.na(luad_data$paper_Tumor.stage))
 meta = data.frame(sample_id = ids, tumor_stage = tsage)
-
 ```
+
+
 
 ```{r}
 # Garantir que as dims estão corretas
@@ -131,7 +169,7 @@ all(names(data_de) == meta$sample_id)
 
 ```
 
-Pré-processamento:
+#### Pré-processamento dos dados
 
 ```{r}
 # Análise exploratória
@@ -152,7 +190,7 @@ counts.keep = data_de[keep,]
 summary(keep)
 dim(counts.keep)
 
-# Foram excluídos 28182 genes
+# Foram excluídos 28182 genes - ISTO ESTÁ BEM?
 dim(data_de) - dim(counts.keep)
 ```
 
@@ -165,6 +203,7 @@ names(dgeObj)
 dgeObj$samples
 ```
 
+A transformação logarítmica aplicada aos dados de expressão genética, serve principalmente para estabilizar a variância dos dados e para tornar a distribuição dos dados mais simétrica, o que é útil para a análise estatística subsequente.
 
 ```{r}
 ## distributions - log transform
