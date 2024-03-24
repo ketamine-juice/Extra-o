@@ -1,0 +1,152 @@
+```{r}
+library(edgeR)
+library(limma)
+library(Glimma)
+library(gplots)
+library(org.Mm.eg.db)
+library(RColorBrewer)
+library(TCGAbiolinks)
+library(DESeq2)       
+```
+
+```{r}
+# Query para chegar ao estudo e transferir ficheiros
+luad = GDCquery( 
+  project = "TCGA-LUAD",
+  data.category = "Transcriptome Profiling",
+  experimental.strategy = 'RNA-Seq',
+  workflow.type = "STAR - Counts",
+  access = "open"
+)
+
+# Query para chegar aos dados clínicos, transferir e reservar
+
+clin = GDCquery(
+  project = 'TCGA-LUAD',
+  data.category = 'Clinical',
+  data.type = 'Clinical Supplement',
+  data.format = 'BCR Biotab'
+)
+
+# Transferir ficheiros
+GDCdownload(luad)
+GDCdownload(clin)
+```
+
+Carregamento dos ficheiros
+
+```{r}
+# Carregamos os dados do estudo e os dados clínicos
+luad_data = GDCprepare(luad, summarizedExperiment = TRUE)
+clin_data = GDCprepare(clin)
+```
+
+```{r}
+library(dplyr)
+# Carregamos os dados RNASeq 
+seqdata = as.data.frame(assay(luad_data, 'unstranded'))
+
+# Limitar ao tumour stage (alterar se necessário)
+data_de = seqdata[,!is.na(luad_data$paper_Tumor.stage)]
+
+# Metadados
+ids = subset(luad_data$patient, !is.na(luad_data$paper_Tumor.stage))
+tsage = subset(luad_data$paper_Tumor.stage, !is.na(luad_data$paper_Tumor.stage))
+meta = data.frame(sample_id = ids, tumor_stage = tsage)
+
+```
+
+```{r}
+# Garantir que as dims estão corretas
+dim(data_de)
+dim(meta)
+
+# Corrigir nomes e garantir ordem 
+# A nomenclatura original tinha extra carateres nos colnames dos dados de epressao
+
+colnames(data_de) = meta$sample_id
+all(names(data_de) == meta$sample_id)
+
+```
+
+Pré-processamento:
+
+```{r}
+# Análise exploratória
+dim(data_de)
+#head(data_de[,1:5])
+any(is.na(data_de))
+```
+
+```{r}
+# Calculamos CPM
+calccpm = cpm(data_de)
+
+# Aparamos os dados, removendo genes com baixa expressão
+# é geralmente aceite a eliminação de genes com CPM inferior a 0.5 em mais do que 2 amostras
+thresh = calccpm > 0.5
+keep = rowSums(thresh) >= 2
+counts.keep = data_de[keep,]
+summary(keep)
+dim(counts.keep)
+
+# Foram excluídos 28182 genes
+dim(data_de) - dim(counts.keep)
+```
+
+
+```{r}
+# Criar objetos para a análise de expr. diferencial
+dgeObj = DGEList(counts.keep)
+dgeObj
+names(dgeObj)
+dgeObj$samples
+```
+
+
+```{r}
+## distributions - log transform
+logcounts <- cpm(dgeObj,log=TRUE)
+boxplot(logcounts, xlab="", ylab="Log2 counts per million",las=2)
+abline(h=median(logcounts),col="blue")
+title("Boxplots of logCPMs (unnormalised)")
+
+# Vou encontrar uma forma mais bonita de fazer isto
+```
+
+```{r}
+## heatmaps
+var_genes <- apply(logcounts, 1, var)
+#head(var_genes)
+select_var <- names(sort(var_genes, decreasing=TRUE))[1:500]
+#head(select_var)
+highly_variable_lcpm <- logcounts[select_var,]
+dim(highly_variable_lcpm)
+#head(highly_variable_lcpm)
+mypalette <- brewer.pal(11,"RdYlBu")
+morecols <- colorRampPalette(mypalette)
+col.cell <- c("purple","orange")[meta$tumor_stage]
+heatmap.2(highly_variable_lcpm, 
+          col=rev(morecols(50)),
+          trace="column", 
+          main="Top 500 most variable genes across samples",
+          ColSideColors=col.cell,scale="row")
+
+
+```
+
+
+```{r}
+# Normalização
+
+dgeObj = calcNormFactors(dgeObj)
+
+# demo
+
+plotMD(logcounts, column = 7)
+abline(h=0,col="grey")
+
+plotMD(dgeObj, column = 7)
+abline(h=0,col="grey")
+```
+
