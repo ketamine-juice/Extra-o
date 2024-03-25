@@ -211,8 +211,9 @@ dim(data_de) - dim(counts.keep)
 ```{r}
 # Criação do objeto para a análise de expr. diferencial
 dgeObj = DGEList(counts.keep)
-dgeObj
+
 names(dgeObj)
+
 dgeObj$samples
 ```
 
@@ -283,37 +284,23 @@ condições experimentais.
 
 ```{r}
 
-luad_data_clean <- luad_data[!is.na(luad_data$paper_Tumor.stage) & !is.na(luad_data$paper_Gender), ]
-group <- paste(luad_data_clean$paper_Tumor.stage, luad_data_clean$paper_Gender, sep = ".")
-group <- as.character(group)
+# Limitar ao tumour stage (alterar se necessário)
 
-# Remove rows with NA values from the group variable
-group <- group[complete.cases(group)]
+#data_de = seqdata[,!is.na(luad_data$paper_Tumor.stage)]
 
-type <- sapply(strsplit(group, ".", fixed = TRUE), function(x) x[1])
-status <- sapply(strsplit(group, ".", fixed = TRUE), function(x) x[2])
+group = paste(luad_data$paper_Tumor.stage)
 
+group = as.character(group)
 
-```
+# Filtrar os dados do grupo para remover NA correspondentes aos mesmos pacientes
+group_clean = group[!is.na(luad_data$paper_Tumor.stage)]
 
-```{r}
+# Definir a variável de design
+design <- model.matrix(~ group_clean)
 
-design = model.matrix(~ type + status)
-
-design
 ```
 
 -   Estimação da dispersão
-
-A estimação da dispersão pode ser calculada através da função \`estimateDisp()\` que é utilizada para estimar tanto as dispersões comuns como as dispersões específicas de cada gene.
-
-```{r}
-
-dgeObj = estimaDisp(dgeObj)
-
-dgeObj
-
-```
 
 ```{r}
 dgeObj = estimateCommonDisp(dgeObj)
@@ -340,8 +327,6 @@ dgeObj
 Foram efetuados quasi-likehood F-tests, são testes altamente recomendados para análises de expressão diferencial de dados de RNA-seq em massa, uma vez que permite um controlo mais rigoroso da taxa de erro, tendo em conta a incerteza na estimativa da dispersão.
 
 ```{r}
-
-
 
 fit = glmFit(dgeObj, design)
 names(fit)
@@ -389,3 +374,8 @@ points(results[detags,"logFC"],-log10(results[detags,"FDR"]),pch=16,col="red")
 #### Análise de Enriquecimento
 
 A análise de enriquecimento é realizada sobre o conjunto de genes alvo, identificados por através da análise de expressão diferencial. O conjunto de genes identificados é comparado com outros conjuntos de genes, onde cada um destes contém genes biologicamente coerentes
+
+```{r}
+
+head(dgeObj$samples)
+```
