@@ -251,3 +251,104 @@ plotMD(dgeObj, column = 7)
 abline(h=0,col="grey")
 ```
 
+#### Análise de expressão diferencial e de enriquecimento
+
+* Definição das variáveis de design
+
+
+```{r}
+
+luad_data_clean <- luad_data[!is.na(luad_data$paper_Tumor.stage) & !is.na(luad_data$paper_Gender), ]
+group <- paste(luad_data_clean$paper_Tumor.stage, luad_data_clean$paper_Gender, sep = ".")
+group <- as.character(group)
+
+# Remove rows with NA values from the group variable
+group <- group[complete.cases(group)]
+
+type <- sapply(strsplit(group, ".", fixed = TRUE), function(x) x[1])
+status <- sapply(strsplit(group, ".", fixed = TRUE), function(x) x[2])
+
+
+```
+
+
+
+
+```{r}
+
+design = model.matrix(~ type + status)
+
+design
+```
+
+
+* Estimação da dispersão
+
+```{r}
+dgeObj = estimateCommonDisp(dgeObj)
+
+dgeObj
+```
+```{r}
+dgeObj = estimateGLMTrendedDisp(dgeObj)
+
+dgeObj
+
+```
+```{r}
+dgeObj = estimateTagwiseDisp(dgeObj)
+
+dgeObj
+```
+
+
+* Fit do Modelo Linear
+
+```{r}
+
+fit = glmFit(dgeObj, design)
+names(fit)
+head(coef(fit))
+
+```
+
+* Teste de Razão de Verossimilhança
+
+```{r}
+
+lrt.BvsL <- glmLRT(fit, coef=2) 
+topTags(lrt.BvsL)
+
+```
+
+
+* Resultados e visualização destes
+
+```{r}
+results <- as.data.frame(topTags(lrt.BvsL,n = Inf))
+results
+dim(results)
+summary(de <- decideTestsDGE(lrt.BvsL))
+```
+
+
+De seguida, criou-se um gráfico de dispersão dos valores de log fold-change em relação à média de contagens para cada gene, destacando os genes diferencialmente expressos identificados.
+
+```{r}
+
+detags <- rownames(dgeObj)[as.logical(de)]
+plotSmear(lrt.BvsL, de.tags=detags)
+
+```
+
+Foi ainda criado um volcano plot onde os genes diferencialmente expressos identificados pelo teste são destacados em vermelho.
+
+```{r}
+
+signif <- -log10(results$FDR)
+plot(results$logFC,signif,pch=16)
+points(results[detags,"logFC"],-log10(results[detags,"FDR"]),pch=16,col="red")
+
+```
+
+
