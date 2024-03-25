@@ -2,16 +2,18 @@
 title: "Trabalho prático de Extração de Conhecimento de Dados Biológicos"
 output: html_document
 date: `r format(Sys.time(), '%Y-%m-%d')`"
+editor_options: 
+  markdown: 
+    wrap: sentence
 ---
 
 ### Explicação dos dados, sua origem e relevância
 
-
-### Tarefas de preparação e de pré-processamento dos dados 
+### Tarefas de preparação e de pré-processamento dos dados
 
 #### Instalação e carregamento dos packages necessários
 
-Em primeiro lugar, procedemos à instalação dos packages necessários para realizar a análise da expressão diferencial. 
+Em primeiro lugar, procedemos à instalação dos packages necessários para realizar a análise da expressão diferencial.
 
 ```{r}
 
@@ -60,7 +62,7 @@ Em primeiro lugar, procedemos à instalação dos packages necessários para rea
 
 ```
 
-De seguida, foi efetuado o carregamento das bibliotecas que haviam sido instaladas. 
+De seguida, foi efetuado o carregamento das bibliotecas que haviam sido instaladas.
 
 ```{r}
 library(edgeR)
@@ -73,14 +75,11 @@ library(TCGAbiolinks)
 library(DESeq2)       
 ```
 
+#### Transferência e carregamento dos ficheiros necessários
 
-
-#### Transferência e carregamento dos ficheiros necessários 
-
-* Transferência dos ficheiros de expressão genética associados ao dataset
+-   Transferência dos ficheiros de expressão genética associados ao dataset
 
 Para a transferência do dataset do conjunto de dados de expressão genética, utilizou-se o pacote TCGAbiolinks, que é uma ferramenta que permite aceder e descarregar dados do The Cancer Genome Atlas (TCGA). Na query, definimos a procura específica dos dados do projeto TCGA-LUAD, a categoria dos mesmos é do tipo "Perfil do Transcriptoma" e a estratégia experimental utilizada para gerar esses dados é a RNA-Seq. Os dados foram processados utilizando o algoritmo STAR para alinhamento de sequências, resultando em contagens de leitura para cada gene. Portanto, o parâmetro "workflow.type" foi especificado como "STAR - Counts". Por fim, especificamos que queremos ter acesso aos dados que estão disponíveis publicamente através do parâmetro "access".
-
 
 ```{r}
 
@@ -96,35 +95,52 @@ GDCdownload(luad)
 
 ```
 
-* Transferência dos dados clínicos associados ao dataset (metadados)
-
-
-```{r}
-
-clin = GDCquery(
-  project = 'TCGA-LUAD',
-  data.category = 'Clinical',
-  data.type = 'Clinical Supplement',
-  data.format = 'BCR Biotab'
-)
-
-GDCdownload(clin)
-```
-
-* Carregamento dos ficheiros
+-   Carregamento do ficheiro
 
 ```{r}
 
-# Carregamos os dados de expressão genética e dos dados clínicos
+# Carregamos os dados de expressão genética e dos metadados associados
 
 luad_data = GDCprepare(luad, summarizedExperiment = TRUE)
-clin_data = GDCprepare(clin)
+
+luad_data
 
 ```
+
+Vamos verificar melhor a que correspondem certos parâmetros:
+
+```{r}
+
+# Tipos de assays
+names(assays(luad_data))
+
+#Tipos de metadados associados a cada gene
+names(rowData(luad_data))
+
+#Tipos de metadados associados a cada amostra
+names(colData(luad_data))
+
+```
+
+Através da informação fornecida em cima, conseguimos perceber que:
+
+-    **dim** - O objeto tem 60660 linhas, cada uma representa um gene, e 600 colunas, que representam as amostras individuais.
+
+-    **metadata** - Os metadados indicam a data de lançamento dos dados .
+
+-   **assays** - Parecem refletir diferentes formas de processamento ou normalização dos dados obtidos.
+
+-   **rownames** - Cada linha está rotulada com o ID de um gene no formato Ensembl.
+
+-   **rowData names** - Existem 10 metadados associados a cada gene, incluindo, por exemplo, a "source", o "type" e o "score".
+
+-   **colnames** - As colunas estão rotuladas com os códigos de barras (barcodes) das amostras, identificando cada amostra de forma única.
+
+-   **colData names** - Há 89 metadados associados a cada amostra, que incluem, por exemplo, o estágio do tumor ("paper_Tumor.stage") e o género ("gender").
 
 #### Preparação dos dados
 
-Para chegar à estrutura desejável dos dados, realizou-se a transformação do dataset em dataframe a partir dos dados em bruto. 
+Para chegar à estrutura desejável dos dados, realizou-se a transformação do dataset em dataframe a partir dos dados em bruto.
 
 ```{r}
 
@@ -135,17 +151,17 @@ seqdata = as.data.frame(assay(luad_data, 'unstranded'))
 
 ```
 
-De seguida, foi feita uma filtração das colunas do dataframe `seqdata` para manter apenas as amostras que possuem informações sobre o estágio do tumor, verificando se os valores da coluna `paper_Tumor.stage` não são NA (não disponíveis). O resultado é armazenado na variável `data_de`, que conterá apenas as colunas de `seqdata` associadas a amostras com informações sobre o estágio do tumor.  
-
+De seguida, foi feita uma filtração das colunas do dataframe `seqdata` para manter apenas as amostras que possuem informações sobre o estágio do tumor, verificando se os valores da coluna `paper_Tumor.stage` não são NA (não disponíveis). O resultado é armazenado na variável `data_de`, que conterá apenas as colunas de `seqdata` associadas a amostras com informações sobre o estágio do tumor. Esta variável servirá para, posteriormente, criar o objeto de análise de expressão genética.
 
 ```{r}
 
 # Limitar ao tumour stage (alterar se necessário)
 data_de = seqdata[,!is.na(luad_data$paper_Tumor.stage)]
 
+
 ```
 
-Por fim, 
+Por fim,
 
 ```{r}
 # Metadados
@@ -153,8 +169,6 @@ ids = subset(luad_data$patient, !is.na(luad_data$paper_Tumor.stage))
 tsage = subset(luad_data$paper_Tumor.stage, !is.na(luad_data$paper_Tumor.stage))
 meta = data.frame(sample_id = ids, tumor_stage = tsage)
 ```
-
-
 
 ```{r}
 # Garantir que as dims estão corretas
@@ -194,9 +208,8 @@ dim(counts.keep)
 dim(data_de) - dim(counts.keep)
 ```
 
-
 ```{r}
-# Criar objetos para a análise de expr. diferencial
+# Criação do objeto para a análise de expr. diferencial
 dgeObj = DGEList(counts.keep)
 dgeObj
 names(dgeObj)
@@ -236,7 +249,6 @@ heatmap.2(highly_variable_lcpm,
 
 ```
 
-
 ```{r}
 # Normalização
 
@@ -253,8 +265,15 @@ abline(h=0,col="grey")
 
 #### Análise de expressão diferencial e de enriquecimento
 
-* Definição das variáveis de design
+Para a identificação do conjunto de genes que têm diferentes níveis de expressão fez-se a comparação de.....
 
+# Contagem do número de condições
+
+num_condicoes \<- length(unique(group))
+
+condições experimentais.
+
+-   Definição das variáveis de design
 
 ```{r}
 
@@ -271,9 +290,6 @@ status <- sapply(strsplit(group, ".", fixed = TRUE), function(x) x[2])
 
 ```
 
-
-
-
 ```{r}
 
 design = model.matrix(~ type + status)
@@ -281,30 +297,34 @@ design = model.matrix(~ type + status)
 design
 ```
 
-
-* Estimação da dispersão
+-   Estimação da dispersão
 
 ```{r}
 dgeObj = estimateCommonDisp(dgeObj)
 
 dgeObj
 ```
+
 ```{r}
 dgeObj = estimateGLMTrendedDisp(dgeObj)
 
 dgeObj
 
 ```
+
 ```{r}
 dgeObj = estimateTagwiseDisp(dgeObj)
 
 dgeObj
 ```
 
+-   Fit do Modelo Linear
 
-* Fit do Modelo Linear
+Foram efetuados quasi-likehood F-tests, são testes altamente recomendados para análises de expressão diferencial de dados de RNA-seq em massa, uma vez que permite um controlo mais rigoroso da taxa de erro, tendo em conta a incerteza na estimativa da dispersão.
 
 ```{r}
+
+
 
 fit = glmFit(dgeObj, design)
 names(fit)
@@ -312,7 +332,7 @@ head(coef(fit))
 
 ```
 
-* Teste de Razão de Verossimilhança
+-   Teste de Razão de Verossimilhança
 
 ```{r}
 
@@ -321,8 +341,7 @@ topTags(lrt.BvsL)
 
 ```
 
-
-* Resultados e visualização destes
+-   Resultados e visualização destes
 
 ```{r}
 results <- as.data.frame(topTags(lrt.BvsL,n = Inf))
@@ -330,7 +349,6 @@ results
 dim(results)
 summary(de <- decideTestsDGE(lrt.BvsL))
 ```
-
 
 De seguida, criou-se um gráfico de dispersão dos valores de log fold-change em relação à média de contagens para cada gene, destacando os genes diferencialmente expressos identificados.
 
@@ -351,4 +369,6 @@ points(results[detags,"logFC"],-log10(results[detags,"FDR"]),pch=16,col="red")
 
 ```
 
+#### Análise de Enriquecimento
 
+A análise de enriquecimento é realizada sobre o conjunto de genes alvo, identificados por através da análise de expressão diferencial. O conjunto de genes identificados é comparado com outros conjuntos de genes, onde cada um destes contém genes biologicamente coerentes
