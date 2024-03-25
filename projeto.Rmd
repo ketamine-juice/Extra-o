@@ -124,9 +124,9 @@ names(colData(luad_data))
 
 Através da informação fornecida em cima, conseguimos perceber que:
 
--    **dim** - O objeto tem 60660 linhas, cada uma representa um gene, e 600 colunas, que representam as amostras individuais.
+-   **dim** - O objeto tem 60660 linhas, cada uma representa um gene, e 600 colunas, que representam as amostras individuais.
 
--    **metadata** - Os metadados indicam a data de lançamento dos dados .
+-   **metadata** - Os metadados indicam a data de lançamento dos dados .
 
 -   **assays** - Parecem refletir diferentes formas de processamento ou normalização dos dados obtidos.
 
@@ -249,6 +249,12 @@ heatmap.2(highly_variable_lcpm,
 
 ```
 
+-   Normalização por Trimmed Means of M-values (TMM)
+
+O edgeR normaliza as contagens de leitura utilizando o método de normalização TMM. Os tamanhos efetivos das bibliotecas são então calculados utilizando os fatores de escala.
+
+A função calcNormFactors é usada para a normalização TMM e para calcular os fatores de normalização (escala).
+
 ```{r}
 # Normalização
 
@@ -267,7 +273,7 @@ abline(h=0,col="grey")
 
 Para a identificação do conjunto de genes que têm diferentes níveis de expressão fez-se a comparação de.....
 
-# Contagem do número de condições
+##### Contagem do número de condições
 
 num_condicoes \<- length(unique(group))
 
@@ -299,10 +305,21 @@ design
 
 -   Estimação da dispersão
 
+A estimação da dispersão pode ser calculada através da função \`estimateDisp()\` que é utilizada para estimar tanto as dispersões comuns como as dispersões específicas de cada gene.
+
+```{r}
+
+dgeObj = estimaDisp(dgeObj)
+
+dgeObj
+
+```
+
 ```{r}
 dgeObj = estimateCommonDisp(dgeObj)
 
 dgeObj
+
 ```
 
 ```{r}
