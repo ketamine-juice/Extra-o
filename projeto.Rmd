@@ -143,12 +143,11 @@ Através da informação fornecida em cima, conseguimos perceber que:
 Para chegar à estrutura desejável dos dados, realizou-se a transformação do dataset em dataframe a partir dos dados em bruto.
 
 ```{r}
-
-#library(dplyr) ISTO ESTÁ ONDE?
-
 # Carregamento, extração e transformação dos dados provenientes do RNAseq 
 seqdata = as.data.frame(assay(luad_data, 'unstranded'))
 
+# Carregamento de metadados
+meta = data.frame(sample_id = luad_data$patient, tumour_stage = luad_data$paper_Tumor.stage)
 ```
 
 De seguida, foi feita uma filtração das colunas do dataframe `seqdata` para manter apenas as amostras que possuem informações sobre o estágio do tumor, verificando se os valores da coluna `paper_Tumor.stage` não são NA (não disponíveis). O resultado é armazenado na variável `data_de`, que conterá apenas as colunas de `seqdata` associadas a amostras com informações sobre o estágio do tumor. Esta variável servirá para, posteriormente, criar o objeto de análise de expressão genética.
@@ -156,7 +155,7 @@ De seguida, foi feita uma filtração das colunas do dataframe `seqdata` para ma
 ```{r}
 
 # Limitar ao tumour stage (alterar se necessário)
-data_de = seqdata[,!is.na(luad_data$paper_Tumor.stage)]
+seqdata_filter = seqdata[,!is.na(luad_data$paper_Tumor.stage)]
 
 
 ```
@@ -167,19 +166,19 @@ Por fim,
 # Metadados
 ids = subset(luad_data$patient, !is.na(luad_data$paper_Tumor.stage))
 tsage = subset(luad_data$paper_Tumor.stage, !is.na(luad_data$paper_Tumor.stage))
-meta = data.frame(sample_id = ids, tumor_stage = tsage)
+meta_filter = data.frame(sample_id = ids, tumor_stage = tsage)
 ```
 
 ```{r}
 # Garantir que as dims estão corretas
-dim(data_de)
+dim(seqdata)
 dim(meta)
 
 # Corrigir nomes e garantir ordem 
 # A nomenclatura original tinha extra carateres nos colnames dos dados de epressao
 
-colnames(data_de) = meta$sample_id
-all(names(data_de) == meta$sample_id)
+colnames(seqdata) = meta$sample_id
+all(names(seqdata) == meta$sample_id)
 
 ```
 
@@ -187,25 +186,24 @@ all(names(data_de) == meta$sample_id)
 
 ```{r}
 # Análise exploratória
-dim(data_de)
+dim(seqdata)
 #head(data_de[,1:5])
-any(is.na(data_de))
+any(is.na(seqdata))
 ```
 
 ```{r}
 # Calculamos CPM
-calccpm = cpm(data_de)
+calccpm = cpm(seqdata)
 
 # Aparamos os dados, removendo genes com baixa expressão
 # é geralmente aceite a eliminação de genes com CPM inferior a 0.5 em mais do que 2 amostras
 thresh = calccpm > 0.5
 keep = rowSums(thresh) >= 2
-counts.keep = data_de[keep,]
+counts.keep = seqdata[keep,]
 summary(keep)
 dim(counts.keep)
 
-# Foram excluídos 28182 genes - ISTO ESTÁ BEM?
-dim(data_de) - dim(counts.keep)
+# Foram excluídos 22119 genes
 ```
 
 ```{r}
@@ -220,13 +218,22 @@ A transformação logarítmica aplicada aos dados de expressão genética, serve
 
 ```{r}
 ## distributions - log transform
+library(ggplot2)
+library(reshape2)
 logcounts <- cpm(dgeObj,log=TRUE)
-boxplot(logcounts, xlab="", ylab="Log2 counts per million",las=2)
+boxplot(logcounts[,1:100], xlab="", ylab="Log2 counts per million",las=2)
+boxplot(logcounts[,101:200], xlab="", ylab="Log2 counts per million",las=2)
+boxplot(logcounts[,201:300], xlab="", ylab="Log2 counts per million",las=2)
+boxplot(logcounts[,301:400], xlab="", ylab="Log2 counts per million",las=2)
+boxplot(logcounts[,401:500], xlab="", ylab="Log2 counts per million",las=2)
+boxplot(logcounts[,501:600], xlab="", ylab="Log2 counts per million",las=2)
 abline(h=median(logcounts),col="blue")
 title("Boxplots of logCPMs (unnormalised)")
 
 # Vou encontrar uma forma mais bonita de fazer isto
 ```
+Na secção abaixo são desenhados heatmaps que visam comparar a expressão de genes em diferentes estágios.
+
 
 ```{r}
 ## heatmaps
@@ -239,14 +246,12 @@ dim(highly_variable_lcpm)
 #head(highly_variable_lcpm)
 mypalette <- brewer.pal(11,"RdYlBu")
 morecols <- colorRampPalette(mypalette)
-col.cell <- c("purple","orange")[meta$tumor_stage]
-heatmap.2(highly_variable_lcpm, 
+col.cell <- c("purple","orange")[meta$tumour_stage[1:10]]
+heatmap.2(highly_variable_lcpm[,1:10], 
           col=rev(morecols(50)),
           trace="column", 
           main="Top 500 most variable genes across samples",
           ColSideColors=col.cell,scale="row")
-
-
 ```
 
 -   Normalização por Trimmed Means of M-values (TMM)
