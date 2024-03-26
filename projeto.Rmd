@@ -144,8 +144,6 @@ Para chegar à estrutura desejável dos dados, realizou-se a transformação do 
 
 ```{r}
 
-#library(dplyr) ISTO ESTÁ ONDE?
-
 # Carregamento, extração e transformação dos dados provenientes do RNAseq 
 seqdata = as.data.frame(assay(luad_data, 'unstranded'))
 
