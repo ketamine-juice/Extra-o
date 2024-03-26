@@ -9,4 +9,4 @@ Este trabalho foi realizado no âmbito da UC de Métodos de Extração de Conhec
 
 - Mariana Oliveira | PG52648
 - Rui Sousa | PG21019
-- Samuel Baptista | PG
+- Samuel Baptista | PG49130
