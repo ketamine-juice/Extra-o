@@ -1,0 +1,389 @@
+---
+title: "Trabalho prático de Extração de Conhecimento de Dados Biológicos"
+output: html_document
+date: `r format(Sys.time(), '%Y-%m-%d')`"
+editor_options: 
+  markdown: 
+    wrap: sentence
+---
+
+### Explicação dos dados, sua origem e relevância
+
+### Tarefas de preparação e de pré-processamento dos dados
+
+#### Instalação e carregamento dos packages necessários
+
+Em primeiro lugar, procedemos à instalação dos packages necessários para realizar a análise da expressão diferencial.
+
+```{r}
+
+  ## edgeR
+
+#if (!require("BiocManager", quietly = TRUE))
+#    install.packages("BiocManager")
+
+#BiocManager::install("edgeR")
+
+
+  ## limma 
+
+#BiocManager::install("limma")
+
+
+  ## Glimma
+
+#BiocManager::install(c("Glimma"))
+
+
+  ##gplots
+
+#BiocManager::install(c("gplots"))
+
+
+  ##org.Mm.eg.db
+
+#BiocManager::install(c("org.Mm.eg.db"))
+
+
+  ##RColorBrewer
+
+#BiocManager::install(c("RColorBrewer"))
+
+
+  ##TCGAbiolinks
+
+#if (!requireNamespace("TCGAbiolinks", quietly = TRUE))
+#  BiocManager::install("TCGAbiolinks")
+
+  ##DESeq2
+
+#BiocManager::install("DESeq2")
+
+
+```
+
+De seguida, foi efetuado o carregamento das bibliotecas que haviam sido instaladas.
+
+```{r}
+library(edgeR)
+library(limma)
+library(Glimma)
+library(gplots)
+library(org.Mm.eg.db)
+library(RColorBrewer)
+library(TCGAbiolinks)
+library(DESeq2)       
+```
+
+#### Transferência e carregamento dos ficheiros necessários
+
+-   Transferência dos ficheiros de expressão genética associados ao dataset
+
+Para a transferência do dataset do conjunto de dados de expressão genética, utilizou-se o pacote TCGAbiolinks, que é uma ferramenta que permite aceder e descarregar dados do The Cancer Genome Atlas (TCGA). Na query, definimos a procura específica dos dados do projeto TCGA-LUAD, a categoria dos mesmos é do tipo "Perfil do Transcriptoma" e a estratégia experimental utilizada para gerar esses dados é a RNA-Seq. Os dados foram processados utilizando o algoritmo STAR para alinhamento de sequências, resultando em contagens de leitura para cada gene. Portanto, o parâmetro "workflow.type" foi especificado como "STAR - Counts". Por fim, especificamos que queremos ter acesso aos dados que estão disponíveis publicamente através do parâmetro "access".
+
+```{r}
+
+luad = GDCquery( 
+  project = "TCGA-LUAD",
+  data.category = "Transcriptome Profiling",
+  experimental.strategy = 'RNA-Seq',
+  workflow.type = "STAR - Counts",
+  access = "open"
+)
+
+GDCdownload(luad)
+
+```
+
+-   Carregamento do ficheiro
+
+```{r}
+
+# Carregamos os dados de expressão genética e dos metadados associados
+
+luad_data = GDCprepare(luad, summarizedExperiment = TRUE)
+
+luad_data
+
+```
+
+Vamos verificar melhor a que correspondem certos parâmetros:
+
+```{r}
+
+# Tipos de assays
+names(assays(luad_data))
+
+#Tipos de metadados associados a cada gene
+names(rowData(luad_data))
+
+#Tipos de metadados associados a cada amostra
+names(colData(luad_data))
+
+```
+
+Através da informação fornecida em cima, conseguimos perceber que:
+
+-   **dim** - O objeto tem 60660 linhas, cada uma representa um gene, e 600 colunas, que representam as amostras individuais.
+
+-   **metadata** - Os metadados indicam a data de lançamento dos dados .
+
+-   **assays** - Parecem refletir diferentes formas de processamento ou normalização dos dados obtidos.
+
+-   **rownames** - Cada linha está rotulada com o ID de um gene no formato Ensembl.
+
+-   **rowData names** - Existem 10 metadados associados a cada gene, incluindo, por exemplo, a "source", o "type" e o "score".
+
+-   **colnames** - As colunas estão rotuladas com os códigos de barras (barcodes) das amostras, identificando cada amostra de forma única.
+
+-   **colData names** - Há 89 metadados associados a cada amostra, que incluem, por exemplo, o estágio do tumor ("paper_Tumor.stage") e o género ("gender").
+
+#### Preparação dos dados
+
+Para chegar à estrutura desejável dos dados, realizou-se a transformação do dataset em dataframe a partir dos dados em bruto.
+
+```{r}
+
+# Carregamento, extração e transformação dos dados provenientes do RNAseq 
+seqdata = as.data.frame(assay(luad_data, 'unstranded'))
+
+# Carregamento de metadados
+meta = data.frame(sample_id = luad_data$patient , tumor_stage = luad_data$paper_Tumor.stage)
+
+```
+
+De seguida, foi feita uma filtração das colunas do dataframe `seqdata` para manter apenas as amostras que possuem informações sobre o estágio do tumor, verificando se os valores da coluna `paper_Tumor.stage` não são NA (não disponíveis). O resultado é armazenado na variável `seqdata`, que conterá apenas as colunas de `seqdata` associadas a amostras com informações sobre o estágio do tumor. Esta variável servirá para, posteriormente, criar o objeto de análise de expressão genética.
+
+```{r}
+
+# Limitar ao tumour stage (alterar se necessário)
+seqdata_filter = seqdata[,!is.na(luad_data$paper_Tumor.stage)]
+
+
+```
+
+Por fim,
+
+```{r}
+# Metadados
+ids = subset(luad_data$patient, !is.na(luad_data$paper_Tumor.stage))
+tsage = subset(luad_data$paper_Tumor.stage, !is.na(luad_data$paper_Tumor.stage))
+meta_filter = data.frame(sample_id = ids, tumor_stage = tsage)
+```
+
+```{r}
+# Garantir que as dims estão corretas
+dim(seqdata)
+dim(meta)
+
+# Corrigir nomes e garantir ordem 
+# A nomenclatura original tinha extra carateres nos colnames dos dados de epressao
+
+colnames(seqdata) = meta$sample_id
+all(names(seqdata) == meta$sample_id)
+
+```
+
+#### Pré-processamento dos dados
+
+```{r}
+# Análise exploratória
+dim(seqdata)
+#head(seqdata[,1:5])
+any(is.na(seqdata))
+```
+
+```{r}
+# Calculamos CPM
+calccpm = cpm(seqdata)
+
+# Aparamos os dados, removendo genes com baixa expressão
+# é geralmente aceite a eliminação de genes com CPM inferior a 0.5 em mais do que 2 amostras
+thresh = calccpm > 0.5
+keep = rowSums(thresh) >= 2
+counts.keep = seqdata[keep,]
+summary(keep)
+dim(counts.keep)
+
+# Foram excluídos 28182 genes - ISTO ESTÁ BEM?
+dim(seqdata) - dim(counts.keep)
+```
+
+```{r}
+# Criação do objeto para a análise de expr. diferencial
+dgeObj = DGEList(counts.keep)
+
+names(dgeObj)
+
+dgeObj$samples
+```
+
+A transformação logarítmica aplicada aos dados de expressão genética, serve principalmente para estabilizar a variância dos dados e para tornar a distribuição dos dados mais simétrica, o que é útil para a análise estatística subsequente.
+
+```{r}
+## distributions - log transform
+logcounts <- cpm(dgeObj,log=TRUE)
+boxplot(logcounts[1:100], xlab="", ylab="Log2 counts per million",las=2)
+boxplot(logcounts[101:200], xlab="", ylab="Log2 counts per million",las=2)
+boxplot(logcounts[201:300], xlab="", ylab="Log2 counts per million",las=2)
+boxplot(logcounts[301:400], xlab="", ylab="Log2 counts per million",las=2)
+boxplot(logcounts[401:500], xlab="", ylab="Log2 counts per million",las=2)
+boxplot(logcounts[501:600], xlab="", ylab="Log2 counts per million",las=2)
+
+abline(h=median(logcounts),col="blue")
+title("Boxplots of logCPMs (unnormalised)")
+
+
+```
+
+```{r}
+## heatmaps
+var_genes <- apply(logcounts, 1, var)
+#head(var_genes)
+select_var <- names(sort(var_genes, decreasing=TRUE))[1:500]
+#head(select_var)
+highly_variable_lcpm <- logcounts[select_var,]
+dim(highly_variable_lcpm)
+#head(highly_variable_lcpm)
+mypalette <- brewer.pal(11,"RdYlBu")
+morecols <- colorRampPalette(mypalette)
+col.cell <- c("purple","orange")[meta$tumor_stage]
+heatmap.2(highly_variable_lcpm, 
+          col=rev(morecols(50)),
+          trace="column", 
+          main="Top 500 most variable genes across samples",
+          ColSideColors=col.cell,scale="row")
+
+
+
+```
+
+-   Normalização por Trimmed Means of M-values (TMM)
+
+O edgeR normaliza as contagens de leitura utilizando o método de normalização TMM. Os tamanhos efetivos das bibliotecas são então calculados utilizando os fatores de escala.
+
+A função calcNormFactors é usada para a normalização TMM e para calcular os fatores de normalização (escala).
+
+```{r}
+# Normalização
+
+dgeObj = calcNormFactors(dgeObj)
+
+# demo
+
+plotMD(logcounts, column = 7)
+abline(h=0,col="grey")
+
+plotMD(dgeObj, column = 7)
+abline(h=0,col="grey")
+```
+
+#### Análise de expressão diferencial e de enriquecimento
+
+Para a identificação do conjunto de genes que têm diferentes níveis de expressão fez-se a comparação de.....
+
+##### Contagem do número de condições
+
+num_condicoes \<- length(unique(group))
+
+condições experimentais.
+
+-   Definição das variáveis de design
+
+```{r}
+
+# Limitar ao tumour stage (alterar se necessário)
+
+#seqdata = seqdata[,!is.na(luad_data$paper_Tumor.stage)]
+
+group = paste(luad_data$paper_Tumor.stage)
+
+group = as.character(group)
+
+# Filtrar os dados do grupo para remover NA correspondentes aos mesmos pacientes
+group_clean = group[!is.na(luad_data$paper_Tumor.stage)]
+
+# Definir a variável de design
+design <- model.matrix(~ group_clean)
+
+```
+
+-   Estimação da dispersão
+
+```{r}
+dgeObj = estimateCommonDisp(dgeObj)
+
+dgeObj
+
+```
+
+```{r}
+dgeObj = estimateGLMTrendedDisp(dgeObj)
+
+dgeObj
+
+```
+
+```{r}
+dgeObj = estimateTagwiseDisp(dgeObj)
+
+dgeObj
+```
+
+-   Fit do Modelo Linear
+
+Foram efetuados quasi-likehood F-tests, são testes altamente recomendados para análises de expressão diferencial de dados de RNA-seq em massa, uma vez que permite um controlo mais rigoroso da taxa de erro, tendo em conta a incerteza na estimativa da dispersão.
+
+```{r}
+
+fit = glmFit(dgeObj, design)
+names(fit)
+head(coef(fit))
+
+```
+
+-   Teste de Razão de Verossimilhança
+
+```{r}
+
+lrt.BvsL <- glmLRT(fit, coef=2) 
+topTags(lrt.BvsL)
+
+```
+
+-   Resultados e visualização destes
+
+```{r}
+results <- as.data.frame(topTags(lrt.BvsL,n = Inf))
+results
+dim(results)
+summary(de <- decideTestsDGE(lrt.BvsL))
+```
+
+De seguida, criou-se um gráfico de dispersão dos valores de log fold-change em relação à média de contagens para cada gene, destacando os genes diferencialmente expressos identificados.
+
+```{r}
+
+detags <- rownames(dgeObj)[as.logical(de)]
+plotSmear(lrt.BvsL, de.tags=detags)
+
+```
+
+Foi ainda criado um volcano plot onde os genes diferencialmente expressos identificados pelo teste são destacados em vermelho.
+
+```{r}
+
+signif <- -log10(results$FDR)
+plot(results$logFC,signif,pch=16)
+points(results[detags,"logFC"],-log10(results[detags,"FDR"]),pch=16,col="red")
+
+```
+
+#### Análise de Enriquecimento
+
+A análise de enriquecimento é realizada sobre o conjunto de genes alvo, identificados por através da análise de expressão diferencial. O conjunto de genes identificados é comparado com outros conjuntos de genes, onde cada um destes contém genes biologicamente coerentes
+
+```{r}
+
+head(dgeObj$samples)
+```

@@ -1,11 +1,20 @@
 ---
-title: "Trabalho prático de Extração de Conhecimento de Dados Biológicos"
-output: html_document
-date: `r format(Sys.time(), '%Y-%m-%d')`"
-editor_options: 
-  markdown: 
-    wrap: sentence
+title: "Análise de Expressão Diferencial"
+output:
+  html_document:
+    toc: yes
+    toc_depth: 2
+    toc_float: yes
+    theme: spacelab
+    number_sections: yes
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
 ---
+<style>
+  body {text-align:justify}
+</style>
+
 
 ### Explicação dos dados, sua origem e relevância
 
