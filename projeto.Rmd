@@ -84,6 +84,7 @@ suppressMessages({
   library(org.Mm.eg.db)
   library(RColorBrewer)
   library(TCGAbiolinks)
+  library(SummarizedExperiment)
 })
 
 ```
@@ -106,14 +107,17 @@ luad = GDCquery(
   access = "open"
 )
 
-GDCdownload(luad)
+# GDCdownload(luad)
 
 # Carregamos os dados de expressão genética e dos metadados associados
 
-luad_data = GDCprepare(luad, 
-                       save = TRUE, 
-                       save.filename = 'luad_data_load.rda',
-                       summarizedExperiment = TRUE)
+# luad_data = GDCprepare(luad, 
+#                       save = TRUE, 
+#                       save.filename = 'luad_data_load.rda',
+#                       summarizedExperiment = TRUE)
+
+# Simplificado
+luad_data = GDCprepare(luad)
 
 # Alternativamente
 # load('luad_data_load.rda')
@@ -123,7 +127,6 @@ luad_data = GDCprepare(luad,
 Abaixo procedemos a uma primeira verificação dos dados.
 
 ```{r}
-
 # Tamanho do objeto
 dim(luad_data)
 
