@@ -1,0 +1,442 @@
+---
+title: "Análise de Expressão Diferencial"
+output:
+  html_document:
+    toc: yes
+    toc_depth: 2
+    toc_float: yes
+    theme: spacelab
+    number_sections: yes
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
+---
+
+```{=html}
+<style>
+  body {text-align:justify}
+</style>
+```
+# Introdução
+
+O adenocarcinoma é uma forma de cancro maligno que se desenvolve a partir de células glandulares nos tecidos epiteliais e pode originar-se em diversas partes do corpo. Entre os tipos de adenocarcinoma mais comuns, destacam-se os que afetam a mama, pulmão, próstata, trato gastrointestinal, entre outros. [[Mullangi & Lekkala](https://www.ncbi.nlm.nih.gov/books/NBK562137/)] Este estudo concentra-se especificamente no adenocarcinoma do pulmão (LUAD), uma das formas de cancro com alta taxa de mortalidade. [[Albert *et al*](https://doi.org/10.1378/chest.123.1_suppl.21S)] Para o adenocarcinoma do pulmão foram identificados três tipos de subtipos - *Terminal Respiratory Unit*, *Proximal Inflamatory (PI)* e *Proximal Proliferative (PP)* - estando estes subtipos associados à expressão diferenciada de diferentes genes associados ao adenocarcinoma.
+
+Ao longo deste estudo foi desenvolvida uma análise de expressão genética diferencial para determinar a ocorrência de diferenças significativas na expressão genética entre pacientes do tipo TRU, PI e PP. Este estudo foi desenvolvido tendo em vista a identifição marcadores genéticos que possam ser úteis para diagnóstico, prognóstico e desenvolvimento de terapias direcionadas para o LUAD. Esperamos que os resultados deste estudo contribuam para uma melhor compreensão da biologia molecular desse tipo de cancro e, consequentemente, para o desenvolvimento de novas estratégias terapêuticas mais eficazes.
+
+# Materiais e métodos
+
+Foi utilizado um *data set* público do *The Cancer Genome Atlas Program* (TCGA), disponibilizado através do *NCI Genomic Data Commons* (GDC), com 600 amostras de pacientes com LUAD. [TCGA-LUAD](https://portal.gdc.cancer.gov/projects/TCGA-LUAD)
+
+A análise dos dados foi feita utilizando a ferramenta `edgeR`, uma biblioteca desenvolvida para o Bioconductor [Documentação Bioconductor](https://bioconductor.org/about/) da linguagem de programação R, especialmente projetada para análise de dados de expressão genética baseada em contagens de RNA-seq. A abordagem estatística empregada pelo edgeR é baseada em métodos bayesianos, permitindo uma análise robusta e precisa dos dados de expressão genética.[Documentação edgeR](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2796818/)
+
+Ao longo deste relatório serão apresentados os diferentes passos utilizados, desde o processamento dos dados à sua análise, pretendendo-se demonstrar e explicitar programatica a *pipeline* utilizada com vista a apresentar um trabalho claro e replicável para outros data sets.
+
+# Análise do data set
+
+## Pré-processamento
+
+### Requisitos
+
+De modo a conseguir correr corretamente o código utilizado neste estudo, é recomendada a instalação das seguintes bibliotecas:
+
+Para esta análise de expressão diferencial com edgeR utilizamos as seguintes bibliotecas do Bioconductor:
+
+-   **edgeR**: Uma ferramenta para análise de dados de RNA-seq, oferecendo métodos estatísticos avançados para identificar genes diferencialmente expressos.
+
+-   **limma**: Reconhecido por sua flexibilidade e robustez, o limma é amplamente utilizado para análise de microarrays e RNA-seq, oferecendo uma variedade de modelos estatísticos.
+
+-   **Glimma**: Essencial para visualização interativa de resultados de análise de expressão diferencial, o Glimma permite explorar e entender melhor os dados por meio de gráficos informativos.
+
+-   **gplots**: Um pacote que oferece uma variedade de funções gráficas para visualização de dados, complementando as análises estatísticas.
+
+-   **org.Mm.eg.db**: Uma base de dados essencial para mapeamento de identificadores de genes entre diferentes sistemas de anotação.
+
+-   **RColorBrewer**: Oferece uma ampla seleção de paletas de cores para visualização de dados, tornando as figuras mais atraentes e informativas.
+
+-   **TCGAbiolinks**: Fundamental para acesso e análise de dados do Projeto de Carcinoma Humano (TCGA), permitindo insights valiosos sobre uma variedade de tipos de câncer.
+
+```{r instalar-packages}
+
+  ## edgeR
+
+#if (!require("BiocManager", quietly = TRUE))
+#    install.packages("BiocManager")
+
+#BiocManager::install("edgeR")
+
+
+  ## limma 
+
+#BiocManager::install("limma")
+
+
+  ## Glimma
+
+#BiocManager::install(c("Glimma"))
+
+
+  ##gplots
+
+#BiocManager::install(c("gplots"))
+
+
+  ##org.Mm.eg.db
+
+#BiocManager::install(c("org.Mm.eg.db"))
+
+
+  ##RColorBrewer
+
+#BiocManager::install(c("RColorBrewer"))
+
+
+  ##TCGAbiolinks
+
+#if (!requireNamespace("TCGAbiolinks", quietly = TRUE))
+#  BiocManager::install("TCGAbiolinks")
+
+
+```
+
+```{r carregar-packages}
+suppressMessages({
+  library(edgeR)
+  library(limma)
+  library(Glimma)
+  library(gplots)
+  library(org.Mm.eg.db)
+  library(RColorBrewer)
+  library(TCGAbiolinks)
+  library(SummarizedExperiment)
+})
+```
+
+## Transferência e carregamento do data set e criação do objeto SummarizedExperiment
+
+Para a transferência do dataset do conjunto de dados de expressão genética, utilizou-se o pacote TCGAbiolinks, que é uma ferramenta que permite aceder e descarregar dados do TCGA. Na query, definimos a procura específica dos dados do projeto TCGA-LUAD, a categoria dos mesmos é do tipo "Perfil do Transcriptoma" e a estratégia experimental utilizada para gerar esses dados é a RNA-Seq. Os dados foram processados utilizando o algoritmo STAR para alinhamento de sequências, resultando em contagens de leitura para cada gene. Portanto, o parâmetro "workflow.type" foi especificado como "STAR - Counts". Por fim, especificamos que queremos ter acesso aos dados que estão disponíveis publicamente através do parâmetro "access".
+
+Após a transferência dos dados é então gerado um objeto `summarizedExperiment` através do código GDCprepare. Utilizam-se parâmetros para gravar os dados para simplificar o carregamento do objeto posteriormente, caso seja necessário.
+
+```{r transferencia-carregamento-dados}
+# Elaboração da query para conectar ao servidor GDC
+luad = GDCquery( 
+  project = "TCGA-LUAD",
+  data.category = "Transcriptome Profiling",
+  experimental.strategy = 'RNA-Seq',
+  workflow.type = "STAR - Counts",
+  access = "open"
+)
+
+# Transferência dos ficheiros
+#GDCdownload(luad)
+
+#' Carregamento dos ficheiros num objeto SummarizedExperiment
+#' 
+#' O parâmetro save permite guardar o histórico num ficheiro compacto
+#' tornando a leitura e carregamento numa próxima utilização mais ágil/rápida
+
+#luad_data = GDCprepare(luad,
+#                       save = TRUE,
+#                       save.filename = 'luad_data_load.rda',
+#                       summarizedExperiment = TRUE)
+
+#' No próximo carregamento utilizar apenas o seguinte comando para não saturar o servidor 
+#' e tornar o processo mais rápido
+
+load('luad_data_load.rda')
+luad_data = data
+```
+
+### Verificação dos dados
+
+Abaixo procedemos a uma primeira verificação dos dados.
+
+```{r verificacao-dados}
+# Tamanho do objeto
+dim(luad_data)
+
+# Informação sobre o estudo
+metadata(luad_data)
+
+# Informação sobre os tipos de dados de RNASeq
+names(assays(luad_data))
+
+# Tipos de metadados associados a cada gene
+names(rowData(luad_data))
+
+# Tipos de metadados associados a cada amostra
+names(colData(luad_data))
+
+```
+
+Através da informação fornecida em cima, conseguimos perceber que:
+
+-   **dim** - O objeto tem 60660 linhas, cada uma representa um gene, e 600 colunas, que representam as amostras individuais, correspondendo ao especificado na [documentação do estudo](https://portal.gdc.cancer.gov/projects/TCGA-LUAD).
+
+-   **metadata** - Os metadados indicam a data de lançamento dos dados.
+
+-   **assays** - A informação obtida através dos assays dá-nos 6 tipos de dados tendo em consideração a orientação dos transcritos obtidos e diferentes tipos de normalização.
+
+-   **rownames** - Cada linha está rotulada com o ID de um gene no formato Ensembl.
+
+-   **rowData names** - Existem 10 metadados associados a cada gene, incluindo, por exemplo, a "source", o "type" e o "score".
+
+-   **colnames** - As colunas estão rotuladas com os códigos de barras (barcodes) das amostras, identificando cada amostra de forma única.
+
+-   **colData names** - Há 89 metadados associados a cada amostra, que incluem, por exemplo, o estágio do tumor ("paper_Tumor.stage") e o género ("gender").
+
+### Preparação da estrutura de dados
+
+Para chegar à estrutura desejável dos dados, realizou-se a transformação do dataset em dataframe a partir dos dados em bruto. Optou-se por extrair os dados de RNASeq correspondentes às contagens `unstranded` uma vez que a direção dos transcritos não é relevante para este trabalho.
+
+```{r}
+
+# Carregamento, extração e transformação dos dados provenientes do RNAseq 
+seqdata = as.data.frame(assay(luad_data, 'unstranded'))
+
+#Verificação da inexistência de valores NA
+any(is.na(seqdata))
+
+```
+
+Foram também carregados os metadados, isolando os dados correspondentes à presença/ausência de oncogenes e os dados associados à variável "gender" na variável "meta".
+
+```{r}
+
+# Carregamento de metadados
+
+gender = luad_data$gender
+
+sample_id = substr(luad_data$sample_id, 1, 10)
+
+expr = luad_data$paper_expression_subtype
+
+meta = data.frame(sample_id = sample_id, gender = gender, expr = expr)
+
+
+
+```
+
+De seguida, foi feita uma filtragem das colunas do dataframe `seqdata` para manter apenas as amostras que possuem informações sobre a presença/ausência de oncogenes com base nos metadados previamente tratados.
+
+O resultado é armazenado na variável `seqdata_filter`, que conterá apenas as colunas de `seqdata` associadas a amostras com informações sobre os oncogenes. Esta variável servirá para, posteriormente, criar o objeto de análise de expressão genética.
+
+```{r pre-processamento}
+
+# Limpeza dos dados e tratamento relativo ao género
+
+any(is.na(meta$gender))
+
+# Converte 'gender' para factor com dois níveis
+meta$gender = factor(meta$gender, levels = c("male", "female"))
+
+table(meta$gender)
+
+filter = meta$gender != '[Not Available]'
+
+meta = meta[filter,]
+
+any(is.na(meta$expr))
+
+meta = meta[!is.na(meta$expr),]
+
+table(meta$expr)
+
+filter = meta$expr != '[Not Available]'
+
+meta = meta[filter,]
+
+
+# Criar uma vista dos dados de RNASeq com base nos subtipos de expressão
+
+
+seqdata_filter = seqdata[,meta$expr] 
+
+```
+
+Fazemos uma verificação final para garantir que os dados estão corretamente carregados e é feita a sua correspondência para garantir o correto encadeamento dos dados de expressão com as respetivas amostras.
+
+```{r verficacao-final-dados}
+
+# Garantir que as dims estão corretas
+
+dim(seqdata_filter)
+
+dim(meta)
+
+# Corrigir nomes e garantir ordem 
+
+colnames(seqdata_filter) = meta$sample_id
+
+all(names(seqdata_filter) == meta$sample_id)
+
+```
+
+Como conseguimos observar, o número de colunas do dataframe "seqdata_filter" é igual ao número de linhas do dataframe "meta".
+
+## Normalização e criação do objeto `dgeObj` para análise
+
+### Normalização usando contagens por milhão (CPM)
+
+Neste processo, os dados de expressão genética são refinados antes da análise. Primeiro, é efetuado o cálculo das Contagens Por Milhão (CPM), um método de normalização de níveis de expressão comummente utilizado para análise de dados RNA-seq. Este método ajusta diferenças de profundidade da sequenciação, dando dados de expressão relativos mais facilmente comparáveis entre todos os genes da amostra. [[Scheepbouwer *et al*](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10320083/), [pluto.bio](https://pluto.bio/resources/learning-series/navigating-rna-seq-data-a-guide-to-normalization-methods)] comummente utilizada importante na normalização de dados de sequenciamento.
+
+Em seguida, os dados são ajustados para remover genes com expressão muito baixa, uma prática comum na análise de RNA-Seq. Este critério de remoção, definido como genes com CPM inferior a 0.5 em pelo menos duas amostras, é aplicado para manter apenas os genes mais relevantes. O número de genes excluídos é relatado para avaliação.
+
+```{r analise-exploratoria-pt1}
+# Calculamos CPM
+calccpm = cpm(seqdata_filter)
+
+# Aparamos os dados, removendo genes com baixa expressão
+# é geralmente aceite a eliminação de genes com CPM inferior a 0.5 em mais do que 2 amostras
+thresh = calccpm > 0.5
+keep = rowSums(thresh) >= 2
+counts_keep = seqdata_filter[keep,]
+
+summary(keep)
+
+dim(counts_keep)
+
+```
+
+A analisar o sumário da variável `keep`, que corresponde aos genes que serão mantidos para análise, identificamos que serão desconsiderados **41 131** genes.
+
+Posteriormente, os dados são organizados num objeto `dgeObj`, adequado para análise estatística de expressão diferencial, preparando-os para investigações mais aprofundadas sobre as variações na expressão genética entre as condições estudadas.
+
+### Criação do objeto `dgeObj`
+
+```{r analise-exploratoria-pt2}
+
+# Criação do objeto para a análise de expr. diferencial
+
+dgeObj = DGEList(counts_keep)
+
+names(dgeObj)
+
+head(dgeObj$samples)
+
+```
+
+### Logaritmização dos dados 
+De seguida, procedeu-se à logaritmização dos dados, uma prática comum no tratamento de dados de expressão genético para posterior análise da sua diferenciação. A logaritmização é essencial para reduzir o enviesamento dos dados.
+
+```{r analise-exploratoria-pt3}
+
+## distributions - log transform
+logcounts = cpm(dgeObj,log=TRUE)
+```
+
+## Análise Exploratória
+
+### Análise por boxplot
+
+O primeiro passo na análise exploratória passa pela geração de boxplots a partir dos dados logaritmizados, com o intuito de investigar a presença de valores atípicos (outliers). A visualização dos dados por meio de boxplots permite uma avaliação rápida e eficiente da dispersão dos dados em relação à sua mediana e quartis, possibilitando a detecção de quaisquer observações que se desviem significativamente do padrão geral, o que pode indicar erros experimentais ou características biológicas distintas.
+
+Considerando a extensão da amostra e a complexidade dos dados, foram criados subconjuntos por amostra para facilitar a análise. Essa abordagem visa segmentar os dados em conjuntos menores e mais fáceis de gerir, o que permite uma análise mais detalhada de cada subgrupo sem sobrecarregar os recursos computacionais ou comprometer a interpretação dos resultados. 
+
+Ao analisar os boxplots das contagens logaritmizadas, podemos identificar a presença de outliers que nos pode indicar a existência de genes sobreexpressos ou subexpressos. Esses outliers representam observações que estão significativamente distantes da maioria dos valores no conjunto de dados. No contexto da expressão genética, os outliers podem surgir devido a vários fatores, como erros experimentais, variações biológicas extremas ou mesmo artefatos técnicos durante a geração dos dados. Genes sobreexpressos, em particular, podem ser de interesse em estudos de expressão diferencial, uma vez que podem desempenhar papéis importantes em processos biológicos específicos ou estar associados a doenças.
+
+Portanto, a identificação e o entendimento dos outliers são cruciais para interpretar corretamente os resultados das análises de expressão genétca e para discernir padrões biologicamente relevantes das variações aleatórias nos dados.
+
+```{r boxplots}
+boxplot(logcounts[,1:50], xlab="", ylab="Log2 counts per million",las=2)
+abline(h=median(logcounts),col="blue")
+title("Boxplots of logCPMs (unnormalised)")
+
+boxplot(logcounts[,51:100], xlab="", ylab="Log2 counts per million",las=2)
+abline(h=median(logcounts),col="blue")
+title("Boxplots of logCPMs (unnormalised)")
+
+
+boxplot(logcounts[,101:150], xlab="", ylab="Log2 counts per million",las=2)
+abline(h=median(logcounts),col="blue")
+title("Boxplots of logCPMs (unnormalised)")
+
+
+boxplot(logcounts[,151:200], xlab="", ylab="Log2 counts per million",las=2)
+abline(h=median(logcounts),col="blue")
+title("Boxplots of logCPMs (unnormalised)")
+
+boxplot(logcounts[,201:242], xlab="", ylab="Log2 counts per million",las=2)
+abline(h=median(logcounts),col="blue")
+title("Boxplots of logCPMs (unnormalised)")
+```
+
+### Comparação de níveis de expressão para os diferentes subtipos de LUAD
+
+Abaixo é feita a análise de expressão genética dos 10 genes com maior variabilidade detetada para a presença/ausência de oncogenes com recurso a um *heatmap*.
+
+```{r}
+
+# Cálculo da variância de cada gene nos dados de contagem logaritmizada
+
+var_genes = apply(logcounts, 1, var)
+
+# Seleção dos 10 genes com maior variabilidade
+
+select_var = names(sort(var_genes, decreasing=TRUE))[1:10]
+
+head(select_var)
+
+# Seleciona as linhas da matriz 'logcounts' com base nos índices fornecidos em 'select_var'
+
+highly_variable_lcpm = logcounts[select_var,]
+
+# Calcula as dimensões (número de linhas e colunas) da matriz 'highly_variable_lcpm'
+
+dim(highly_variable_lcpm)
+
+
+```
+
+Para melhorar a visualização destas diferenças poderão ser empregues estratégias como a análise de PCA ou a agregação de amostras , permitindo uma compreensão mais clara das variações genéticas associadas aos estadios tumorais.
+
+A identificação dos genes mais variáveis e a atribuição de cores com base nos estágios do tumor oferecem insights valiosos sobre a expressão genética diferencial entre os estadios do câncer, fornecendo pistas importantes sobre a progressão da doença e possíveis alvos terapêuticos.
+
+```{r}
+
+mypalette <- brewer.pal(9,"RdYlBu")
+
+morecols <- colorRampPalette(mypalette)
+
+#indices = 1:242
+
+#unique_stages = unique(meta$oncogene[indices])
+
+#cores = length(unique_stages)
+#stage_pal = brewer.pal(9,'Set1')
+#stage_cols = colorRampPalette(stage_pal)
+
+#col.cell = stage_cols(length(unique_stages))
+
+#col.cell <- stage_cols(cores)[meta$oncogene[indices]]
+
+#col.cell = c("purple","orange", "green")[meta$expr]
+
+#color_mapping <- setNames(col.cell, unique_stages)
+
+#heatmap.2(highly_variable_lcpm[,indices], 
+#          col=rev(morecols(5)),
+#          trace="column", 
+#          main="Top 10 most variable genes across samples",
+#          ColSideColors = col.cell,
+#          scale="row"
+#          )
+
+#heatmap.2(highly_variable_lcpm, 
+#          col=rev(morecols(50)),
+#          trace="column", 
+#          main="Top 10 most variable genes across samples",
+#          ColSideColors=col.cell,scale="row")
+
+col.cell1 = c("purple","orange", "green")[meta$expr]
+heatmap.2(highly_variable_lcpm, 
+          col=rev(morecols(50)),
+          trace="column", 
+          main="Top 10 most variable genes across samples",
+          ColSideColors=col.cell1,scale="row")
+
+```
+
+Apesar do desafio imposto pelo grande número de amostras, esta análise exploratória revela diferenças notáveis entre estadios.
+
+
