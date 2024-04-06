@@ -399,7 +399,8 @@ Abaixo é apresentado um *heatmap* para os 30 genes com maior variabilidade em t
 var_genes = apply(logcounts, 1, var)
 
 # Seleção dos 10 genes com maior variabilidade
-select_var = names(sort(var_genes, decreasing=TRUE))[1:30]
+select_var = names(sort(var_genes, decreasing=TRUE))[1:50]
+
 head(select_var)
 select_var
 # Seleciona as linhas da matriz 'logcounts' com base nos índices fornecidos em 'select_var'
