@@ -1,3 +1,9 @@
+# Específicos ao projeto
+GDCdata
+
+# Específicos MAC
+.DS_Store
+
 # History files
 .Rhistory
 .Rapp.history

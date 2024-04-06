@@ -124,6 +124,7 @@ luad = GDCquery(
 ```
 # 2.1 Pré-processamento dos dados
 
+Abaixo carregamos os dados transferidos do GDC via TCGAbiolinks utilizando o método GDCprepare, que processa automaticamente os ficheiros presentes na pasta GDCdata criada e os converte num objeto SummarizedExperiment que comporta um conjunto de tabelas com dados como expressão genética de vários genes para cada amostra e metadados associados a essas amostras.
 
 ```{r carregamento-dados}
 
@@ -213,7 +214,7 @@ meta = data.frame(sample_id = sample_id, gender = gender, expr = expr)
 ```
 
 
-De seguida, foi feita uma filtração das colunas do dataframe `seqdata` para manter apenas as amostras que possuem informações sobre a presença/ausência de oncogenes com base nos metadados previamente tratados.
+De seguida, foi feita uma filtragem das colunas do dataframe `seqdata` para manter apenas as amostras que possuem informações sobre a presença/ausência de oncogenes com base nos metadados previamente tratados.
 
 O resultado é armazenado na variável `seqdata_filter`, que conterá apenas as colunas de `seqdata` associadas a amostras com informações sobre os oncogenes. Esta variável servirá para, posteriormente, criar o objeto de análise de expressão genética.
 
@@ -252,7 +253,7 @@ seqdata_filter = seqdata[,meta$expr]
 
 ```
 
-Fazemos uma verificação final para garantir que os dados estão corretamente carregados e é feita a sua correspondência.
+Fazemos uma verificação final para garantir que os dados estão corretamente carregados e é feita a sua correspondência para garantir o correto encadeamento dos dados de expressão com as respetivas amostras.
 
 ```{r verficacao-final-dados}
 
@@ -278,6 +279,11 @@ Como conseguimos observar, o número de colunas do dataframe "seqdata_filter" é
 
 Neste processo, os dados de expressão genética são refinados antes da análise. Primeiro, é efetuado o cálculo das Contagens Por Milhão (CPM), uma métrica importante na normalização de dados de sequenciamento. Em seguida, os dados são ajustados para remover genes com expressão muito baixa, uma prática comum na análise de RNA-Seq. Este critério de remoção, definido como genes com CPM inferior a 0.5 em pelo menos duas amostras, é aplicado para manter apenas os genes mais relevantes. O número de genes excluídos é relatado para avaliação. 
 
+
+referencias para justificar CPM:
+
+https://www.frontiersin.org/journals/genetics/articles/10.3389/fgene.2020.00594/full#B32
+https://academic.oup.com/bioinformatics/article/26/1/139/182458?login=false
 
 
 ```{r analise-exploratoria-pt1}
