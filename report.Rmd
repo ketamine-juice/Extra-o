@@ -108,6 +108,7 @@ suppressMessages({
   library(RColorBrewer)
   library(TCGAbiolinks)
   library(SummarizedExperiment)
+  library(biomaRt)
 })
 ```
 
@@ -323,6 +324,31 @@ De seguida, procedeu-se à logaritmização dos dados, uma prática comum no tra
 
 ## distributions - log transform
 logcounts = cpm(dgeObj,log=TRUE)
+
+# Set up the connection to Ensembl
+ensembl <- useEnsembl(biomart = "genes", dataset = "hsapiens_gene_ensembl")
+ensembl_dataset <- useDataset('hsapiens_gene_ensembl', mart = ensembl)
+
+# Remove version numbers from Ensembl gene IDs in logcounts
+ensembl_ids <- gsub("\\..*", "", rownames(logcounts))
+rownames(logcounts) <- ensembl_ids
+
+# Retrieve gene symbols for the Ensembl IDs
+gene_symbols <- getBM(attributes = c("ensembl_gene_id", "external_gene_name"),
+                      filters = "ensembl_gene_id",
+                      values = ensembl_ids,
+                      mart = ensembl)
+
+# Loop through each Ensembl gene ID in seqdata
+for (i in seq_along(ensembl_ids)) {
+  # Find the index of the Ensembl gene ID in gene_symbols
+  idx <- match(ensembl_ids[i], gene_symbols$ensembl_gene_id)
+  # If a corresponding gene symbol is found and it's not an empty string, replace the row name
+  if (!is.na(idx) && gene_symbols$external_gene_name[idx] != "") {
+    rownames(logcounts)[i] <- gene_symbols$external_gene_name[idx]
+  }
+}
+
 ```
 
 ## Análise Exploratória
@@ -332,10 +358,6 @@ logcounts = cpm(dgeObj,log=TRUE)
 O primeiro passo na análise exploratória passa pela geração de boxplots a partir dos dados logaritmizados, com o intuito de investigar a presença de valores atípicos (outliers). A visualização dos dados por meio de boxplots permite uma avaliação rápida e eficiente da dispersão dos dados em relação à sua mediana e quartis, possibilitando a detecção de quaisquer observações que se desviem significativamente do padrão geral, o que pode indicar erros experimentais ou características biológicas distintas.
 
 Considerando a extensão da amostra e a complexidade dos dados, foram criados subconjuntos por amostra para facilitar a análise. Essa abordagem visa segmentar os dados em conjuntos menores e mais fáceis de gerir, o que permite uma análise mais detalhada de cada subgrupo sem sobrecarregar os recursos computacionais ou comprometer a interpretação dos resultados. 
-
-Ao analisar os boxplots das contagens logaritmizadas, podemos identificar a presença de outliers que nos pode indicar a existência de genes sobreexpressos ou subexpressos. Esses outliers representam observações que estão significativamente distantes da maioria dos valores no conjunto de dados. No contexto da expressão genética, os outliers podem surgir devido a vários fatores, como erros experimentais, variações biológicas extremas ou mesmo artefatos técnicos durante a geração dos dados. Genes sobreexpressos, em particular, podem ser de interesse em estudos de expressão diferencial, uma vez que podem desempenhar papéis importantes em processos biológicos específicos ou estar associados a doenças.
-
-Portanto, a identificação e o entendimento dos outliers são cruciais para interpretar corretamente os resultados das análises de expressão genétca e para discernir padrões biologicamente relevantes das variações aleatórias nos dados.
 
 ```{r boxplots}
 boxplot(logcounts[,1:50], xlab="", ylab="Log2 counts per million",las=2)
@@ -361,81 +383,50 @@ abline(h=median(logcounts),col="blue")
 title("Boxplots of logCPMs (unnormalised)")
 ```
 
+Ao analisar os boxplots das contagens logaritmizadas, podemos identificar a presença de outliers que nos pode indicar a existência de genes sobreexpressos ou subexpressos. Esses outliers representam observações que estão significativamente distantes da maioria dos valores no conjunto de dados. No contexto da expressão genética, os outliers podem surgir devido a vários fatores, como erros experimentais, variações biológicas extremas ou mesmo artefatos técnicos durante a geração dos dados. Genes sobreexpressos, em particular, podem ser de interesse em estudos de expressão diferencial, uma vez que podem desempenhar papéis importantes em processos biológicos específicos ou estar associados a doenças.
+
+Portanto, a identificação e o entendimento dos outliers são cruciais para interpretar corretamente os resultados das análises de expressão genétca e para discernir padrões biologicamente relevantes das variações aleatórias nos dados.
+
+
 ### Comparação de níveis de expressão para os diferentes subtipos de LUAD
 
-Abaixo é feita a análise de expressão genética dos 10 genes com maior variabilidade detetada para a presença/ausência de oncogenes com recurso a um *heatmap*.
+Abaixo é feita a análise de expressão genética dos 10 genes com maior variabilidade detetada para a presença/ausência de oncogenes com recurso a um *heatmap*. A utilização de *heatmaps* é particularmente útil para análises diferenciais de expressão genética uma vez que permite a identificação de padrões de expressão genética associados a condições específicas que podem dar pistas no sentido de identificação sobre biomarcadores para cada condição.
+
+Abaixo é apresentado um *heatmap* para os 30 genes com maior variabilidade em termos de níveis de expressão para cada um dos subtipos de LUAD (TRU, PI e PP).
 
 ```{r}
-
 # Cálculo da variância de cada gene nos dados de contagem logaritmizada
-
 var_genes = apply(logcounts, 1, var)
 
 # Seleção dos 10 genes com maior variabilidade
-
-select_var = names(sort(var_genes, decreasing=TRUE))[1:10]
-
+select_var = names(sort(var_genes, decreasing=TRUE))[1:30]
 head(select_var)
-
+select_var
 # Seleciona as linhas da matriz 'logcounts' com base nos índices fornecidos em 'select_var'
-
 highly_variable_lcpm = logcounts[select_var,]
+highly_variable_lcpm
 
 # Calcula as dimensões (número de linhas e colunas) da matriz 'highly_variable_lcpm'
-
 dim(highly_variable_lcpm)
 
+# Criação do mapa
+mypalette = brewer.pal(9,"RdYlBu")
+morecols = colorRampPalette(mypalette)
 
-```
-
-Para melhorar a visualização destas diferenças poderão ser empregues estratégias como a análise de PCA ou a agregação de amostras , permitindo uma compreensão mais clara das variações genéticas associadas aos estadios tumorais.
-
-A identificação dos genes mais variáveis e a atribuição de cores com base nos estágios do tumor oferecem insights valiosos sobre a expressão genética diferencial entre os estadios do câncer, fornecendo pistas importantes sobre a progressão da doença e possíveis alvos terapêuticos.
-
-```{r}
-
-mypalette <- brewer.pal(9,"RdYlBu")
-
-morecols <- colorRampPalette(mypalette)
-
-#indices = 1:242
-
-#unique_stages = unique(meta$oncogene[indices])
-
-#cores = length(unique_stages)
-#stage_pal = brewer.pal(9,'Set1')
-#stage_cols = colorRampPalette(stage_pal)
-
-#col.cell = stage_cols(length(unique_stages))
-
-#col.cell <- stage_cols(cores)[meta$oncogene[indices]]
-
-#col.cell = c("purple","orange", "green")[meta$expr]
-
-#color_mapping <- setNames(col.cell, unique_stages)
-
-#heatmap.2(highly_variable_lcpm[,indices], 
-#          col=rev(morecols(5)),
-#          trace="column", 
-#          main="Top 10 most variable genes across samples",
-#          ColSideColors = col.cell,
-#          scale="row"
-#          )
-
-#heatmap.2(highly_variable_lcpm, 
-#          col=rev(morecols(50)),
-#          trace="column", 
-#          main="Top 10 most variable genes across samples",
-#          ColSideColors=col.cell,scale="row")
-
+labels = levels(meta$expr)
 col.cell1 = c("purple","orange", "green")[meta$expr]
 heatmap.2(highly_variable_lcpm, 
           col=rev(morecols(50)),
           trace="column", 
           main="Top 10 most variable genes across samples",
           ColSideColors=col.cell1,scale="row")
-
+legend("left", legend=labels, fill=c("purple","orange","green")) # corrigir etiqueta
 ```
+
+
+Para melhorar a visualização destas diferenças poderão ser empregues estratégias como a análise de PCA ou a agregação de amostras , permitindo uma compreensão mais clara das variações genéticas associadas aos estadios tumorais.
+
+A identificação dos genes mais variáveis e a atribuição de cores com base nos estágios do tumor oferecem insights valiosos sobre a expressão genética diferencial entre os estadios do câncer, fornecendo pistas importantes sobre a progressão da doença e possíveis alvos terapêuticos.
 
 Apesar do desafio imposto pelo grande número de amostras, esta análise exploratória revela diferenças notáveis entre estadios.
 
