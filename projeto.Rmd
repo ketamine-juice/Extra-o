@@ -140,7 +140,7 @@ luad_data = GDCprepare(luad)
 
 ```{r carregamento-dados}
 # Alternativamente para quando o servidor está em baixo
-#luad_data = load('luad_data_load.rda')
+luad_data = load('luad_data_load.rda')
 luad_data = data
 ```
 
@@ -224,7 +224,7 @@ O resultado é armazenado na variável `seqdata_filter`, que conterá apenas as 
 any(is.na(meta$gender))
 
 # Converte 'gender' para factor com dois níveis
-meta$gender = factor(meta$gender, levels = c("male", "female"))
+#meta$gender = factor(meta$gender, levels = c("male", "female"))
 
 table(meta$gender)
 
@@ -337,7 +337,7 @@ boxplot(logcounts[,151:200], xlab="", ylab="Log2 counts per million",las=2)
 abline(h=median(logcounts),col="blue")
 title("Boxplots of logCPMs (unnormalised)")
 
-boxplot(logcounts[,201:242], xlab="", ylab="Log2 counts per million",las=2)
+boxplot(logcounts[,201:248], xlab="", ylab="Log2 counts per million",las=2)
 abline(h=median(logcounts),col="blue")
 title("Boxplots of logCPMs (unnormalised)")
 
@@ -442,6 +442,11 @@ plotMD(dgeObj, column = 7)
 abline(h=0,col="grey")
 ```
 
+```{r}
+dgeObj
+```
+
+
 # 3. Análise de expressão diferencial e de enriquecimento
 
 Para a análise de expressão diferencial agruparam-se duas variáveis com base em duas características selecionadas por nós: género e subtipo de expressão. Ao agrupar as amostras com base nessas características, podemos comparar os diferentes níveis de expressão de genes entre os dois tipos de género e os três subtipos de expressão, permitindo a identificação de genes cuja expressão está associada a essas características.
@@ -453,6 +458,10 @@ Assim, esta análise permitirá ganhar insights sobre a regulação genética su
 Em primeiro lugar, agruparam-se numa variável as duas variáveis selecionadas para a análise da expressão genética e, de seguida, coverteu-se a variável "group" para o tipo "caractér" para permitir futura compatibilidade com as operação efetuadas.
 
 ```{r}
+
+# Substituir caracteres especiais nos valores de expr
+meta$expr <- gsub("prox.-prolif.", "prox_prolif", meta$expr)
+meta$expr <- gsub("prox.-inflam", "prox_inflam", meta$expr)
 
 group = paste(meta$gender, meta$expr, sep = ".")
 
@@ -474,9 +483,9 @@ gender = sapply(strsplit(group, ".", fixed=T), function(x) x[1])
 
 gender = factor(gender, levels = c("male", "female"))
 
-expr = sub(".*?\\.", "", group)
+expr = sapply(strsplit(group, ".", fixed=T), function(x) x[2])
 
-expr = factor(expr, levels = c("prox.-prolif.", "prox.-inflam", "TRU"))
+expr = factor(expr, levels = c("prox_prolif", "prox_inflam", "TRU"))
 
 # Definir a variável de design
 
@@ -598,8 +607,18 @@ points(results[detags,"logFC"],-log10(results[detags,"FDR"]),pch=16,col="red")
 
 ```
 
+```{r}
 
-### 3.4.1 Para o coeficiente "exprprox.-inflam"
+# get annotation for genes in results
+#ann <- select(org.Mm.eg.db,keys=rownames(results),columns=c("ENTREZID","SYMBOL","GENENAME"))
+#head(ann)
+#results.annotated <- cbind(results, ann)
+#head(results.annotated)
+
+```
+
+
+### 3.4.1 Para o coeficiente "exprTRU"
 
 
 ```{r}
@@ -650,6 +669,43 @@ plot(results$logFC,signif,pch=16)
 points(results[detags,"logFC"],-log10(results[detags,"FDR"]),pch=16,col="red")
 
 ```
+
+```{r}
+
+# get annotation for genes in results
+#ann <- select(org.Mm.eg.db,keys=rownames(results),columns=c("ENTREZID","SYMBOL","GENENAME"))
+#head(ann)
+#results.annotated <- cbind(results, ann)
+#head(results.annotated)
+
+```
+
+### 3.4.1 Para o coeficiente "genderfemale"
+
+```{r}
+
+lrt.BvsL = glmLRT(fit, coef = 4) 
+
+topTags(lrt.BvsL)
+
+results <- as.data.frame(topTags(lrt.BvsL,n = Inf))
+results
+
+dim(results)
+summary(de <- decideTestsDGE(lrt.BvsL))
+```
+Podemos concluir que não foram encontradas diferenças significativas entre a expressão genética entre o género feminino e masculino. 
+
+
+```{r}
+
+# get annotation for genes in results
+#ann <- select(org.Mm.eg.db,keys=rownames(results),columns=c("ENTREZID","SYMBOL","GENENAME"))
+#head(ann)
+#results.annotated <- cbind(results, ann)
+#head(results.annotated)
+```
+
 
 #### Análise de Enriquecimento
 
