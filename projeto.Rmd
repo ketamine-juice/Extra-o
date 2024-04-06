@@ -140,12 +140,10 @@ luad_data = GDCprepare(luad)
 
 ```{r carregamento-dados}
 # Alternativamente para quando o servidor está em baixo
-# luad_data = load('luad_data_load.rda')
+#luad_data = load('luad_data_load.rda')
 luad_data = data
 ```
 
-```{r carregamento-dados}
-```
 
 Abaixo procedemos a uma primeira verificação dos dados.
 
@@ -472,26 +470,26 @@ Foram extraídas as variáveis de interesse, "gender_dge" e "expr_dge" e, de seg
 
 ```{r}
 
-
-#gender_levels <- levels(meta$gender)
-#gender_dge <- factor(gender_dge, levels = gender_levels)
 gender = sapply(strsplit(group, ".", fixed=T), function(x) x[1])
-# Convert gender to a factor with the correct levels and order
-gender <- factor(gender, levels = c("male", "female"))
 
-
-
-
-#expr_levels <- levels(meta$expr)
-#expr = factor(expr, levels = expr_levels)
+gender = factor(gender, levels = c("male", "female"))
 
 expr = sub(".*?\\.", "", group)
-expr <- factor(expr, levels = c("prox.-prolif.", "prox.-inflam", "TRU"))
+
+expr = factor(expr, levels = c("prox.-prolif.", "prox.-inflam", "TRU"))
+
 # Definir a variável de design
 
 design = model.matrix(~ expr + gender)
 
+head(design)
+
 ```
+
+Podemos observar que foram excluídos dois níveis "male" e "prox.-prolif" A exclusão dos dois níveis das variáveis na matriz de design ocorreu porque, ao criar a matriz de design com a fórmula ~ expr + gender, o R utiliza o esquema de codificação dummy para representar variáveis categóricas. Esse esquema cria uma coluna para cada nível da variável categórica, exceto um, que serve como referência.
+
+No caso de variáveis categóricas uma coluna é criada para cada nível único, exceto um, que é excluído para evitar redundância de informações. Portanto, o R exclui automaticamente um nível para evitar a redundância de informações na matriz de design.
+
 
 ## 3.3. Ajuste de model
 
@@ -530,22 +528,34 @@ O modelo NB pode ser alargado com métodos de quasi-likehood (QL) para ter em co
 
 <https://rest.neptune-prod.its.unimelb.edu.au/server/api/core/bitstreams/3e89dfc8-449b-5463-a53d-7c10e31add5e/content>
 
-A estimativa das dispersões de QL é efectuada utilizando a função glmQLFit:
+A estimativa das dispersões de QL é efectuada utilizando a função glmQLFit. Esta função é utilizada para ajustar o modelo, e os resultados são armazenados na variável "fit":
 
 ```{r}
 
 fit = glmFit(dgeObj, design)
 
 head(fit$coefficients)
+
 ```
 
 Devolveu um objeto DGEGLM com os valores estimados dos coeficientes GLM para cada gene.
 
--   Teste de Razão de Verossimilhança (LRT)
+Cada coeficiente representa a mudança esperada na expressão para um aumento unitário na respectiva variável independente, mantendo todas as outras variáveis constantes. Por exemplo:
+
+- Um aumento unitário em "exprprox.-inflam" está associado a uma diminuição de 0.09420212 unidades na expressão genética do gene ENSG00000000003.15.
+- Um aumento unitário em "exprTRU" está associado a um aumento de 0.4591496 unidades na expressão do gene ENSG00000000419.1.
+- A variável "genderfemale" é uma variável binária, então o coeficiente representa a diferença na expressão genética entre indivíduos do sexo feminino e masculino. Neste caso, o coeficiente é muito próximo de zero, indicando que não há uma diferença significativa na expressão genética entre os dois géneros neste modelo.
+
+
+## 3.4. Teste de Razão de Verossimilhança (LRT)
+
+### 3.4.1 Para o coeficiente "exprprox.-inflam"
+
 
 ```{r}
 
-lrt.BvsL <- glmLRT(fit, coef=3) 
+lrt.BvsL = glmLRT(fit, coef = 2) 
+
 topTags(lrt.BvsL)
 
 ```
@@ -558,6 +568,69 @@ results
 dim(results)
 summary(de <- decideTestsDGE(lrt.BvsL))
 ```
+
+
+A variável "exprprox.-inflam" representa a expressão genética de genes associados à ??????. Os resultados do teste de verossimilhança indicam:
+
+- logFC: Reflete a magnitude da mudança na expressão genética desses genes em comparação com a média de todos os genes. Valores positivos significam aumento na expressão, enquanto negativos indicam diminuição.Os valores de logFC variam entre -9.728 e 10.289, indicando uma ampla gama de mudanças na expressão genética dos genes associados à ?????. Isso sugere que alguns genes têm uma expressão significativamente aumentada em resposta à ?????, enquanto outros têm uma expressão significativamente reduzida.
+
+- PValue e FDR: Indicam a significância estatística dessas mudanças na expressão. Valores baixos sugerem que as mudanças são estatisticamente significativas.Todos os valores apresentados de PValue e FDR são muito próximos de zero, o que indica uma forte evidência estatística de que as mudanças observadas na expressão genética são significativas. Isso sugere que as diferenças na expressão dos genes associados à ??????? são altamente improváveis de ocorrerem ao acaso e são muito confiáveis.
+
+
+Os genes foram classificados como "Up" (expressão aumentada), "Down" (expressão reduzida) ou "NotSig" (não significativo) em relação à inflamação. A maioria dos genes (8626) está classificada como "Up", indicando aumento da expressão em resposta à ?????????, enquanto 8428 genes estão classificados como "Down", indicando redução da expressão. Além disso, 2475 genes não mostram uma mudança significativa na expressão em resposta à ?????????.
+
+De seguida, criou-se um gráfico de dispersão dos valores de log fold-change em relação à média de contagens para cada gene, destacando os genes diferencialmente expressos identificados.
+
+```{r}
+
+detags <- rownames(dgeObj)[as.logical(de)]
+plotSmear(lrt.BvsL, de.tags=detags)
+
+```
+
+Foi ainda criado um volcano plot onde os genes diferencialmente expressos identificados pelo teste são destacados em vermelho.
+
+```{r}
+
+signif <- -log10(results$FDR)
+plot(results$logFC,signif,pch=16)
+points(results[detags,"logFC"],-log10(results[detags,"FDR"]),pch=16,col="red")
+
+```
+
+
+### 3.4.1 Para o coeficiente "exprprox.-inflam"
+
+
+```{r}
+
+lrt.BvsL = glmLRT(fit, coef = 3) 
+
+topTags(lrt.BvsL)
+
+```
+
+
+-   Resultados e visualização destes
+
+```{r}
+results <- as.data.frame(topTags(lrt.BvsL,n = Inf))
+results
+dim(results)
+summary(de <- decideTestsDGE(lrt.BvsL))
+```
+
+Com base nos resultados fornecidos para o coeficiente "exprTRU":
+
+- logFC: Os valores de logFC variam entre -10.591 e 9.348, indicando uma ampla gama de mudanças na expressão genética dos genes associados à condição representada pela variável "exprTRU". Logo, sugere que alguns genes têm uma expressão significativamente aumentada em resposta a essa condição, enquanto outros têm uma expressão significativamente reduzida.
+
+- PValue e FDR: Todos os valores de PValue e FDR são muito próximos de zero, indicando uma forte evidência estatística de que as mudanças observadas na expressão gênica são significativas. Isso sugere que as diferenças na expressão dos genes associados à condição representada por "exprTRU" são altamente improváveis de ocorrerem ao acaso e são muito confiáveis do ponto de vista estatístico.
+
+Portanto, com base nos dados fornecidos, podemos concluir que há uma associação significativa entre a condição representada por "exprTRU" e a expressão genética dos genes estudados. Alguns genes têm sua expressão aumentada em resposta a essa condição, enquanto outros têm sua expressão reduzida, e essas mudanças são altamente confiáveis do ponto de vista estatístico.
+
+
+EXPLORAR SIGNIFICADO BIOLÓGICO
+
 
 De seguida, criou-se um gráfico de dispersão dos valores de log fold-change em relação à média de contagens para cada gene, destacando os genes diferencialmente expressos identificados.
 
