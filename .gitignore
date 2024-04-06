@@ -1,5 +1,6 @@
 # Específicos ao projeto
 GDCdata
+*.rda
 
 # Específicos MAC
 .DS_Store
