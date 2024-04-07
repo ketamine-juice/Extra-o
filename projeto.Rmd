@@ -201,13 +201,11 @@ Foram também carregados os metadados, isolando os dados correspondentes à pres
 
 # Carregamento de metadados
 
-gender = luad_data$gender
-
 sample_id = substr(luad_data$sample_id, 1, 10)
 
 expr = luad_data$paper_expression_subtype
 
-meta = data.frame(sample_id = sample_id, gender = gender, expr = expr)
+meta = data.frame(sample_id = sample_id, expr = expr)
 
 
 
@@ -221,16 +219,6 @@ O resultado é armazenado na variável `seqdata_filter`, que conterá apenas as 
 
 # Limpeza dos dados e tratamento relativo ao género
 
-any(is.na(meta$gender))
-
-# Converte 'gender' para factor com dois níveis
-#meta$gender = factor(meta$gender, levels = c("male", "female"))
-
-table(meta$gender)
-
-filter = meta$gender != '[Not Available]'
-
-meta = meta[filter,]
 
 any(is.na(meta$expr))
 
@@ -238,9 +226,9 @@ meta = meta[!is.na(meta$expr),]
 
 table(meta$expr)
 
-filter = meta$expr != '[Not Available]'
+#filter = meta$expr != '[Not Available]'
 
-meta = meta[filter,]
+#meta = meta[filter,]
 
 
 # Criar uma vista dos dados de RNASeq com base nos subtipos de expressão
@@ -379,35 +367,6 @@ mypalette <- brewer.pal(9,"RdYlBu")
 
 morecols <- colorRampPalette(mypalette)
 
-#indices = 1:242
-
-#unique_stages = unique(meta$oncogene[indices])
-
-#cores = length(unique_stages)
-#stage_pal = brewer.pal(9,'Set1')
-#stage_cols = colorRampPalette(stage_pal)
-
-#col.cell = stage_cols(length(unique_stages))
-
-#col.cell <- stage_cols(cores)[meta$oncogene[indices]]
-
-#col.cell = c("purple","orange", "green")[meta$expr]
-
-#color_mapping <- setNames(col.cell, unique_stages)
-
-#heatmap.2(highly_variable_lcpm[,indices], 
-#          col=rev(morecols(5)),
-#          trace="column", 
-#          main="Top 10 most variable genes across samples",
-#          ColSideColors = col.cell,
-#          scale="row"
-#          )
-
-#heatmap.2(highly_variable_lcpm, 
-#          col=rev(morecols(50)),
-#          trace="column", 
-#          main="Top 10 most variable genes across samples",
-#          ColSideColors=col.cell,scale="row")
 
 col.cell1 = c("purple","orange", "green")[meta$expr]
 heatmap.2(highly_variable_lcpm, 
@@ -463,7 +422,7 @@ Em primeiro lugar, agruparam-se numa variável as duas variáveis selecionadas p
 meta$expr <- gsub("prox.-prolif.", "prox_prolif", meta$expr)
 meta$expr <- gsub("prox.-inflam", "prox_inflam", meta$expr)
 
-group = paste(meta$gender, meta$expr, sep = ".")
+group = paste(meta$expr)
 
 group = as.character(group)
 
@@ -479,17 +438,10 @@ Foram extraídas as variáveis de interesse, "gender_dge" e "expr_dge" e, de seg
 
 ```{r}
 
-gender = sapply(strsplit(group, ".", fixed=T), function(x) x[1])
-
-gender = factor(gender, levels = c("male", "female"))
-
-expr = sapply(strsplit(group, ".", fixed=T), function(x) x[2])
-
-expr = factor(expr, levels = c("prox_prolif", "prox_inflam", "TRU"))
-
 # Definir a variável de design
 
-design = model.matrix(~ expr + gender)
+design = model.matrix(~group)
+
 
 head(design)
 
@@ -538,6 +490,8 @@ O modelo NB pode ser alargado com métodos de quasi-likehood (QL) para ter em co
 <https://rest.neptune-prod.its.unimelb.edu.au/server/api/core/bitstreams/3e89dfc8-449b-5463-a53d-7c10e31add5e/content>
 
 A estimativa das dispersões de QL é efectuada utilizando a função glmQLFit. Esta função é utilizada para ajustar o modelo, e os resultados são armazenados na variável "fit":
+
+
 
 ```{r}
 
@@ -678,32 +632,6 @@ points(results[detags,"logFC"],-log10(results[detags,"FDR"]),pch=16,col="red")
 #results.annotated <- cbind(results, ann)
 #head(results.annotated)
 
-```
-
-### 3.4.1 Para o coeficiente "genderfemale"
-
-```{r}
-
-lrt.BvsL = glmLRT(fit, coef = 4) 
-
-topTags(lrt.BvsL)
-
-results <- as.data.frame(topTags(lrt.BvsL,n = Inf))
-results
-
-dim(results)
-summary(de <- decideTestsDGE(lrt.BvsL))
-```
-Podemos concluir que não foram encontradas diferenças significativas entre a expressão genética entre o género feminino e masculino. 
-
-
-```{r}
-
-# get annotation for genes in results
-#ann <- select(org.Mm.eg.db,keys=rownames(results),columns=c("ENTREZID","SYMBOL","GENENAME"))
-#head(ann)
-#results.annotated <- cbind(results, ann)
-#head(results.annotated)
 ```
 
 
