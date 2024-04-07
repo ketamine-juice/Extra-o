@@ -19,6 +19,14 @@ bibliography: referencias.bib
   body {text-align:justify}
 </style>
 ```
+# Autoria
+
+O trabalho aqui apresentado foi desenvolvido em conjunto por Mariana Oliveira (PG52648), Rui Sousa (PG21019) e Samuel Baptista (PG49130), realizado no âmbito da Unidade Curricular de Extração de Conhecimento de Dados Biológicos do Mestrado em Bioinformática. 
+
+# Abstract
+
+A preencher na fase final do trabalho
+
 # Introdução
 
 O adenocarcinoma é uma forma de cancro maligno que se desenvolve a partir de células glandulares nos tecidos epiteliais e pode originar-se em diversas partes do corpo. Entre os tipos de adenocarcinoma mais comuns, destacam-se os que afetam a mama, pulmão, próstata, trato gastrointestinal, entre outros. [@mullangi2023] Este estudo concentra-se especificamente no adenocarcinoma do pulmão (LUAD), uma das formas de cancro com alta taxa de mortalidade. [@alberg2003] Para o adenocarcinoma do pulmão foram identificados três tipos de subtipos - *Terminal Respiratory Unit*, *Proximal Inflamatory (PI)* e *Proximal Proliferative (PP)* - estando estes subtipos associados à expressão diferenciada de diferentes genes associados ao adenocarcinoma.
@@ -64,7 +72,6 @@ Para esta análise de expressão diferencial com edgeR utilizamos as seguintes b
 
 #BiocManager::install("edgeR")
 
-
   ## limma 
 
 #BiocManager::install("limma")
@@ -74,7 +81,6 @@ Para esta análise de expressão diferencial com edgeR utilizamos as seguintes b
 
 #BiocManager::install(c("Glimma"))
 
-
   ##gplots
 
 #BiocManager::install(c("gplots"))
@@ -82,7 +88,6 @@ Para esta análise de expressão diferencial com edgeR utilizamos as seguintes b
   ##RColorBrewer
 
 #BiocManager::install(c("RColorBrewer"))
-
 
   ##TCGAbiolinks
 
@@ -208,8 +213,6 @@ expr = luad_data$paper_expression_subtype
 
 meta = data.frame(sample_id = sample_id, gender = gender, expr = expr)
 
-
-
 ```
 
 De seguida, foi feita uma filtragem das colunas do dataframe `seqdata` para manter apenas as amostras que possuem informações sobre a presença/ausência de oncogenes com base nos metadados previamente tratados.
@@ -244,7 +247,6 @@ meta = meta[filter,]
 
 # Criar uma vista dos dados de RNASeq com base nos subtipos de expressão
 
-
 seqdata_filter = seqdata[,meta$expr] 
 
 ```
@@ -269,9 +271,83 @@ all(names(seqdata_filter) == meta$sample_id)
 
 Como conseguimos observar, o número de colunas do dataframe "seqdata_filter" é igual ao número de linhas do dataframe "meta".
 
-## Normalização e criação do objeto `dgeObj` para análise
 
-### Normalização usando contagens por milhão (CPM)
+### Análise descritiva do data set
+
+Para iniciar a análise dos dados, realizamos uma série de análises estatísticas descritivas, visando estabelecer correlações preliminares. Primeiramente, examinamos a taxa de incidência do adenocarcinoma do pulmão entre os sexos, buscando compreender se há disparidades significativas na ocorrência da doença entre homens e mulheres. Além disso, investigamos a distribuição da taxa de incidência por faixas etárias, procurando identificar possíveis padrões de prevalência relacionados à idade.
+
+Outro aspecto analisado foi a existência de correlação entre a taxa de mortalidade e o estágio do tumor. Esta análise é crucial para entender se há uma relação entre a gravidade da doença e o risco de mortalidade, o que pode fornecer insights importantes para o prognóstico e tratamento.
+
+```{r}
+genero = table(luad_data$gender)
+
+colors <- c("pink", "lightblue")  # Add more colors if needed
+max_level <- 400
+ylim <- c(0, max_level)
+barplot(genero, col = colors, ylim = ylim, main = "Distribuição de Sexo", ylab = "Ocorrências")
+legend("topright", legend = names(genero), fill = colors)
+for (i in 1:length(genero)) {
+  text(i, genero[i], labels = genero[i], pos = 3, cex = 0.8, col = "black")
+}
+
+chisq.test(genero)
+```
+Analisando o gráfico e os resultados do teste de qui-quadrado é plausível concluir, para um intervalo de confiança de 99%, que não há uma relação entre o gênero e a incidência de LUAD. O gráfico de barras permite também perceber que há uma ampla distribuição de pacientes de ambos os sexos.
+
+Abaixo é feita uma análise da frequência de idades do *data set*.
+
+```{r}
+ages = na.omit(luad_data$paper_Age.at.diagnosis)
+ages = ages[ages != '[Not Available]']
+ages = as.numeric(as.character(ages))
+
+summary(ages)
+
+# Discretização
+breaks = c(40, 50, 60, 70, 80, Inf)
+labels = c("40-49", "50-59", "60-69", "70-79", "80 and over")
+ages_int = cut(ages, breaks = breaks, labels = labels, include.lowest = TRUE)
+
+# Create bar plot with title and x-axis label
+barplot(table(ages_int), main = "Distribuição de idades", xlab = "Intervalos de idades")
+abline(h = mean(ages), col = "red", lty = 2, lwd = 1)
+legend("topright", legend = paste("Idade média:", round(mean(ages), 2)), col = "red", lty = 2, lwd = 1)
+```
+Concluímos que a idade média da população do estudo é aproximadamente 66 anos e que é plausível inferir que o maior volume de incidência está entre os 59 e os 72 anos de idade.
+
+Abaixo analisamos a possível correlação entre o estágio do tumor e a taxa de mortalidade recorrendo a testes de qui-quadrado.
+
+```{r}
+# Load necessary libraries
+library(graphics)
+
+# Combinar as colunas de estado vital e estágio do tumor
+vital_stage <- data.frame(vital_status = luad_data$vital_status, tumor_stage = luad_data$paper_Tumor.stage)
+
+# Remover valores omissos
+vital_stage <- vital_stage[complete.cases(vital_stage$tumor_stage), ]
+
+# Excluir nível '[Not Available]'
+vital_stage <- vital_stage[vital_stage$tumor_stage != '[Not Available]', ]
+
+# Criação da tabela de contingência
+contingency_table <- table(vital_stage$vital_status, vital_stage$tumor_stage)
+
+# Realização do teste de qui-quadrado
+chi_sq_test <- chisq.test(contingency_table)
+chi_sq_test
+
+# Representação gráfica
+barplot(contingency_table, beside = TRUE, legend.text = TRUE,
+        main = "Vital Status vs. Tumor Stage",
+        xlab = "Estágio tumor", ylab = "Frequência",
+        col = c("lightgreen", "pink"))
+```
+Ao analisar os resultados do teste de qui-quadrado é plausível aferir que, em função do valor de prova (0.009062) é plausível rejeitar a hipótese nula e inferir que existe uma correlação entre o estágio do tumor e a taxa de mortalidade. Uma análise do gráfico de barras em que é comparada a taxa de mortalidade por estágio de tumor permite também tirar esta conclusão, nomeadamente que a partir do estágio IIA a taxa de mortalidade é superior.
+
+## Preparação para análise de expressão diferencial
+
+### Normalização dos dados usando contagens por milhão (CPM)
 
 Neste processo, os dados de expressão genética são refinados antes da análise. Primeiro, é efetuado o cálculo das Contagens Por Milhão (CPM), um método de normalização de níveis de expressão comummente utilizado para análise de dados RNA-seq. Este método ajusta diferenças de profundidade da sequenciação, dando dados de expressão relativos mais facilmente comparáveis entre todos os genes da amostra. [@scheepbouwer2023 , @pluto_website] comummente utilizada importante na normalização de dados de sequenciamento.
 
@@ -430,7 +506,7 @@ legend("left", legend=labels, fill=c("purple","orange","green")) # corrigir etiq
 
 Ao analisar os heatmap, torna-se evidente a presença de diferentes perfis de expressão genética para cada um dos subtipos de LUAD. Em particular, os genes MTND1P, LCAL1, da família AKR1, HOXB9, NR0B1, CYP4F3 e ADH1C são sobrexpressos no subtipo TRU. No entanto, os genes MTND1P, LCAL1, AKR1B10, NR0B1, CYP4F3 apresentam níveis de expressão médios para os subtipos PP e PI, sugerindo que podem não desempenhar um papel significativo nesses fenótipos.
 
-Além disso, observa-se que no subtipo PP destacam-se a sobrexpressão dos genes SLC10A2 e AC079466, com níveis de expressão dentro da média para os outros subtipos. No entanto, também é visível uma ligeira sobrexpressão do gene ADH1C e a subexpressão do gene AKR1C2. No subtipo PI, destaca-se a subexpressão do gene ADH1C e uma ligeira sobrexpressão dos genes SLC10A2 e AC079466.
+Além disso, observa-se que no subtipo PP destacam-se a sobrexpressão dos genes SLC10A2 e AC079466 (ENSG00000266976), com níveis de expressão dentro da média para os outros subtipos. No entanto, também é visível uma ligeira sobrexpressão do gene ADH1C e a subexpressão do gene AKR1C2. No subtipo PI, destaca-se a subexpressão do gene ADH1C e uma ligeira sobrexpressão dos genes SLC10A2 e AC079466.
 
 Esses resultados sugerem que os genes da família AKR1 (Aldo Ceto Reductases), estando de acordo com a literatura, onde estes genes aparecem tipicamente associados à proliferação. [@xiao2021] Atendendo aos resultados é plausível considerá-los como biomarcadores dos subtipos de LUAD e ainda indicadores para a diferenciação entre os subtipos.
 
@@ -441,6 +517,252 @@ Adicionalmente, os genes SLC10A2 e AC079466 também mostram potencial como bioma
 O gene SLC10A2, é um responsável pela codificação de transportadores de solutos, tendo sido identificado como gene de interesse para a inibição da proliferação de cancro e promoção da aptose sob terapia com bexaroteno. [@ai2018] Uma próxima análise que seria relevante para tirar conclusões acerca destes resultados seria a análise do tipo de terapia a que os pacientes da amostra foram submetidos.
 
 O gene AC079466, em conjunto com genes da família LINC0 (que também são identificados como genes com grande variabilidade de expressão, ainda que estejam no top 50), aparentam desempenhar um papel importante na regulação do complexo DISC1, indiciado como potencial contribuinte para o desenvolvimento de tumores e respostas imunitárias. [@zheng2023]
+
+### Normalização por Trimmed Means of M-values (TMM)
+
+A normalização dos dados de RNA-seq desempenha um papel crucial no processo de análise realizado pelo edgeR. Por meio do método de Trimmed Means of M-values (TMM), as contagens de leitura são ajustadas levando em consideração a composição global das amostras, o que corrige variações introduzidas durante o sequenciamento. Ao aplicar a função `calcNormFactors()`, o edgeR calcula os fatores de normalização (escala) com base na técnica TMM, assegurando uma correção adequada das diferenças observadas entre as amostras.
+
+O código fornecido ilustra a aplicação desse processo ao objeto de dados `dgeObj`. Em seguida, são gerados gráficos de diferença de média versus média (MD) para visualizar o efeito da normalização nos dados. Esses gráficos permitem avaliar se as variações biológicas são mantidas após o ajuste das contagens, destacando a ausência de diferenças médias entre as amostras como referência para a eficácia da normalização.
+
+Quando as diferenças observadas nos gráficos de MD antes e depois da normalização por TMM são mínimas, isso sugere que o impacto da normalização nas contagens de leitura é insignificante. Isso pode indicar que as variações técnicas introduzidas durante o sequenciamento já eram baixas ou que as amostras possuíam uma composição homogênea.
+
+Embora isso sugira estabilidade nos dados, é importante ressaltar que pequenas diferenças podem ter relevância biológica. Portanto, é necessário interpretar os resultados com cautela, considerando outros aspectos do experimento, como o contexto biológico e as condições experimentais, para compreender plenamente o significado das variações observadas.
+
+```{r}
+dgeObj = calcNormFactors(dgeObj)
+
+# demo
+
+plotMD(logcounts, column = 7)
+abline(h=0,col="grey")
+
+plotMD(dgeObj, column = 7)
+abline(h=0,col="grey")
+```
+
+```{r}
+dgeObj
+```
+
+# Análise de expressão diferencial e de enriquecimento
+
+Para a análise de expressão diferencial agruparam-se duas variáveis com base em duas características selecionadas por nós: género e subtipo de expressão. Ao agrupar as amostras com base nessas características, podemos comparar os diferentes níveis de expressão de genes entre os dois tipos de género e os três subtipos de expressão, permitindo a identificação de genes cuja expressão está associada a essas características.
+
+Assim, esta análise permitirá ganhar insights sobre a regulação genética subjacente às condições biológicas selecionadas
+
+## Agrupamento de variáveis
+
+Em primeiro lugar, agruparam-se numa variável as duas variáveis selecionadas para a análise da expressão genética e, de seguida, coverteu-se a variável "group" para o tipo "caractér" para permitir futura compatibilidade com as operação efetuadas.
+
+```{r}
+
+# Substituir caracteres especiais nos valores de expr
+meta$expr <- gsub("prox.-prolif.", "prox_prolif", meta$expr)
+meta$expr <- gsub("prox.-inflam", "prox_inflam", meta$expr)
+
+group = paste(meta$expr)
+
+group = as.character(group)
+
+group
+
+```
+
+## Criação da matriz de design
+
+A matriz de design expecifica o desenho experimental e as variáveis de interesse na análise de expressão diferencial.
+
+Foram extraídas as variáveis de interesse, "gender_dge" e "expr_dge" e, de seguida, criada a matriz de design.
+
+```{r}
+
+# Definir a variável de design
+
+design = model.matrix(~group)
+
+
+head(design)
+
+```
+
+Podemos observar que foram excluídos dois níveis "male" e "prox.-prolif" A exclusão dos dois níveis das variáveis na matriz de design ocorreu porque, ao criar a matriz de design com a fórmula \~ expr + gender, o R utiliza o esquema de codificação dummy para representar variáveis categóricas. Esse esquema cria uma coluna para cada nível da variável categórica, exceto um, que serve como referência.
+
+No caso de variáveis categóricas uma coluna é criada para cada nível único, exceto um, que é excluído para evitar redundância de informações. Portanto, o R exclui automaticamente um nível para evitar a redundância de informações na matriz de design.
+
+## Ajuste de model
+
+Um dos passos mais importantes na análise de dados de expressão genética diferencial usando um modelo Binomial Negativo, como é o caso do edgeR, é a medição do grau de variação de cada gene. Ajustar o modelo, usando o pacote edgeR, envolve três passos. Em primeiro lugar, estima-se a variação comum, "estimateCommonDisp", que nos dá uma ideia da dispersão geral do genoma para o conjunto de dados selecionado.
+
+<https://web.stanford.edu/class/bios221/labs/rnaseq/lab_4_rnaseq.html>
+
+```{r}
+dgeObj = estimateCommonDisp(dgeObj)
+
+dgeObj$common.dispersion
+
+```
+
+Depois, é necessário ajustar um modelo de tendência que consiste na dispersão média entre todos os genes com abundância semelhante. Ou seja, é o valor ajustado da tendência da dispersão média.
+
+```{r}
+dgeObj = estimateGLMTrendedDisp(dgeObj)
+
+```
+
+Por último, foi calculada a dispersão "Tagwise".
+
+```{r}
+dgeObj = estimateTagwiseDisp(dgeObj)
+
+```
+
+Podemos observar a representação gráfica do coeficiente de variação biológica (BCV) do gene em função da abundância do gene (em log2 contagens por milhão).
+
+```{r}
+plotBCV(dgeObj)
+```
+
+O modelo NB pode ser alargado com métodos de quasi-likehood (QL) para ter em conta a variabilidade específica do gene de fontes biológicas e técnicas. O modelo NB descreve a variabilidade biológica global em todos os genes. Já os métodos QL, são capazes de descrever a variabilidade específica do gene acima e abaixo do nível global.
+
+<https://rest.neptune-prod.its.unimelb.edu.au/server/api/core/bitstreams/3e89dfc8-449b-5463-a53d-7c10e31add5e/content>
+
+A estimativa das dispersões de QL é efectuada utilizando a função glmQLFit. Esta função é utilizada para ajustar o modelo, e os resultados são armazenados na variável "fit":
+
+```{r}
+
+fit = glmFit(dgeObj, design)
+
+head(fit$coefficients)
+
+```
+
+Devolveu um objeto DGEGLM com os valores estimados dos coeficientes GLM para cada gene.
+
+Cada coeficiente representa a mudança esperada na expressão para um aumento unitário na respectiva variável independente, mantendo todas as outras variáveis constantes. Por exemplo:
+
+-   Um aumento unitário em "exprprox.-inflam" está associado a uma diminuição de 0.09420212 unidades na expressão genética do gene ENSG00000000003.15.
+-   Um aumento unitário em "exprTRU" está associado a um aumento de 0.4591496 unidades na expressão do gene ENSG00000000419.1.
+-   A variável "genderfemale" é uma variável binária, então o coeficiente representa a diferença na expressão genética entre indivíduos do sexo feminino e masculino. Neste caso, o coeficiente é muito próximo de zero, indicando que não há uma diferença significativa na expressão genética entre os dois géneros neste modelo.
+
+## Teste de Razão de Verossimilhança (LRT)
+
+### Para o coeficiente "exprprox.-inflam"
+
+```{r}
+
+lrt.BvsL = glmLRT(fit, coef = 2) 
+
+topTags(lrt.BvsL)
+
+```
+
+-   Resultados e visualização destes
+
+```{r}
+results <- as.data.frame(topTags(lrt.BvsL,n = Inf))
+results
+dim(results)
+summary(de <- decideTestsDGE(lrt.BvsL))
+```
+
+A variável "exprprox.-inflam" representa a expressão genética de genes associados à ??????. Os resultados do teste de verossimilhança indicam:
+
+-   logFC: Reflete a magnitude da mudança na expressão genética desses genes em comparação com a média de todos os genes. Valores positivos significam aumento na expressão, enquanto negativos indicam diminuição.Os valores de logFC variam entre -9.728 e 10.289, indicando uma ampla gama de mudanças na expressão genética dos genes associados à ?????. Isso sugere que alguns genes têm uma expressão significativamente aumentada em resposta à ?????, enquanto outros têm uma expressão significativamente reduzida.
+
+-   PValue e FDR: Indicam a significância estatística dessas mudanças na expressão. Valores baixos sugerem que as mudanças são estatisticamente significativas.Todos os valores apresentados de PValue e FDR são muito próximos de zero, o que indica uma forte evidência estatística de que as mudanças observadas na expressão genética são significativas. Isso sugere que as diferenças na expressão dos genes associados à ??????? são altamente improváveis de ocorrerem ao acaso e são muito confiáveis.
+
+Os genes foram classificados como "Up" (expressão aumentada), "Down" (expressão reduzida) ou "NotSig" (não significativo) em relação à inflamação. A maioria dos genes (8626) está classificada como "Up", indicando aumento da expressão em resposta à ?????????, enquanto 8428 genes estão classificados como "Down", indicando redução da expressão. Além disso, 2475 genes não mostram uma mudança significativa na expressão em resposta à ?????????.
+
+De seguida, criou-se um gráfico de dispersão dos valores de log fold-change em relação à média de contagens para cada gene, destacando os genes diferencialmente expressos identificados.
+
+```{r}
+
+detags <- rownames(dgeObj)[as.logical(de)]
+plotSmear(lrt.BvsL, de.tags=detags)
+
+```
+
+Foi ainda criado um volcano plot onde os genes diferencialmente expressos identificados pelo teste são destacados em vermelho.
+
+```{r}
+
+signif <- -log10(results$FDR)
+plot(results$logFC,signif,pch=16)
+points(results[detags,"logFC"],-log10(results[detags,"FDR"]),pch=16,col="red")
+
+```
+
+```{r}
+
+# get annotation for genes in results
+#ann <- select(org.Mm.eg.db,keys=rownames(results),columns=c("ENTREZID","SYMBOL","GENENAME"))
+#head(ann)
+#results.annotated <- cbind(results, ann)
+#head(results.annotated)
+
+```
+
+### Para o coeficiente "exprTRU"
+
+```{r}
+
+lrt.BvsL = glmLRT(fit, coef = 3) 
+
+topTags(lrt.BvsL)
+
+```
+
+-   Resultados e visualização destes
+
+```{r}
+results <- as.data.frame(topTags(lrt.BvsL,n = Inf))
+results
+dim(results)
+summary(de <- decideTestsDGE(lrt.BvsL))
+```
+
+Com base nos resultados fornecidos para o coeficiente "exprTRU":
+
+-   logFC: Os valores de logFC variam entre -10.591 e 9.348, indicando uma ampla gama de mudanças na expressão genética dos genes associados à condição representada pela variável "exprTRU". Logo, sugere que alguns genes têm uma expressão significativamente aumentada em resposta a essa condição, enquanto outros têm uma expressão significativamente reduzida.
+
+-   PValue e FDR: Todos os valores de PValue e FDR são muito próximos de zero, indicando uma forte evidência estatística de que as mudanças observadas na expressão gênica são significativas. Isso sugere que as diferenças na expressão dos genes associados à condição representada por "exprTRU" são altamente improváveis de ocorrerem ao acaso e são muito confiáveis do ponto de vista estatístico.
+
+Portanto, com base nos dados fornecidos, podemos concluir que há uma associação significativa entre a condição representada por "exprTRU" e a expressão genética dos genes estudados. Alguns genes têm sua expressão aumentada em resposta a essa condição, enquanto outros têm sua expressão reduzida, e essas mudanças são altamente confiáveis do ponto de vista estatístico.
+
+EXPLORAR SIGNIFICADO BIOLÓGICO
+
+De seguida, criou-se um gráfico de dispersão dos valores de log fold-change em relação à média de contagens para cada gene, destacando os genes diferencialmente expressos identificados.
+
+```{r}
+
+detags <- rownames(dgeObj)[as.logical(de)]
+plotSmear(lrt.BvsL, de.tags=detags)
+
+```
+
+Foi ainda criado um volcano plot onde os genes diferencialmente expressos identificados pelo teste são destacados em vermelho.
+
+```{r}
+
+signif <- -log10(results$FDR)
+plot(results$logFC,signif,pch=16)
+points(results[detags,"logFC"],-log10(results[detags,"FDR"]),pch=16,col="red")
+
+```
+
+```{r}
+
+# get annotation for genes in results
+#ann <- select(org.Mm.eg.db,keys=rownames(results),columns=c("ENTREZID","SYMBOL","GENENAME"))
+#head(ann)
+#results.annotated <- cbind(results, ann)
+#head(results.annotated)
+
+```
+
+
+
+
 
 # Bibliografia
 
