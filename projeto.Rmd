@@ -75,10 +75,18 @@ Para esta análise de expressão diferencial com edgeR utilizamos as seguintes b
 
 #BiocManager::install(c("RColorBrewer"))
 
+  
+  ##biomaRt
 
-##BiocManager::install(c("biomaRt"))
-##BiocManager::install(c("GSEABase"))
-##BiocManager::install(c("fgsea"))
+#BiocManager::install(c("biomaRt"))
+
+  ##GSEABase
+
+#BiocManager::install(c("GSEABase"))
+
+  ##fgsea
+
+#BiocManager::install(c("fgsea"))
 
 
   ##TCGAbiolinks
@@ -86,6 +94,12 @@ Para esta análise de expressão diferencial com edgeR utilizamos as seguintes b
 #if (!requireNamespace("TCGAbiolinks", quietly = TRUE))
 #  BiocManager::install("TCGAbiolinks")
 
+  ##clusterProfiler
+
+#if (!require("BiocManager", quietly = TRUE))
+#    install.packages("BiocManager")
+
+#BiocManager::install("clusterProfiler")
 
 ```
 
@@ -235,9 +249,9 @@ meta = meta[!is.na(meta$expr),]
 
 table(meta$expr)
 
-#filter = meta$expr != '[Not Available]'
+filter = meta$expr != '[Not Available]'
 
-#meta = meta[filter,]
+meta = meta[filter,]
 
 
 # Criar uma vista dos dados de RNASeq com base nos subtipos de expressão
@@ -317,29 +331,29 @@ Ao analisar os boxplots das contagens logaritmizadas, podemos identificar a pres
 logcounts = cpm(dgeObj,log=TRUE)
 
 
-# Set up the connection to Ensembl
-ensembl <- useEnsembl(biomart = "genes", dataset = "hsapiens_gene_ensembl")
-ensembl_dataset <- useDataset('hsapiens_gene_ensembl', mart = ensembl)
+## Set up the connection to Ensembl
+#ensembl <- useEnsembl(biomart = "genes", dataset = "hsapiens_gene_ensembl")
+#ensembl_dataset <- useDataset('hsapiens_gene_ensembl', mart = ensembl)
 
 # Remove version numbers from Ensembl gene IDs in logcounts
-ensembl_ids <- gsub("\\..*", "", rownames(logcounts))
-rownames(logcounts) <- ensembl_ids
+#ensembl_ids <- gsub("\\..*", "", rownames(logcounts))
+#rownames(logcounts) <- ensembl_ids
 
 # Retrieve gene symbols for the Ensembl IDs
-gene_symbols <- getBM(attributes = c("ensembl_gene_id", "external_gene_name"),
-                      filters = "ensembl_gene_id",
-                      values = ensembl_ids,
-                      mart = ensembl)
+#gene_symbols <- getBM(attributes = c("ensembl_gene_id", "external_gene_name"),
+#                      filters = "ensembl_gene_id",
+#                      values = ensembl_ids,
+#                      mart = ensembl)
 
 # Loop through each Ensembl gene ID in seqdata
-for (i in seq_along(ensembl_ids)) {
+#for (i in seq_along(ensembl_ids)) {
   # Find the index of the Ensembl gene ID in gene_symbols
-  idx <- match(ensembl_ids[i], gene_symbols$ensembl_gene_id)
+#  idx <- match(ensembl_ids[i], gene_symbols$ensembl_gene_id)
   # If a corresponding gene symbol is found and it's not an empty string, replace the row name
-  if (!is.na(idx) && gene_symbols$external_gene_name[idx] != "") {
-    rownames(logcounts)[i] <- gene_symbols$external_gene_name[idx]
-  }
-}
+#  if (!is.na(idx) && gene_symbols$external_gene_name[idx] != "") {
+#    rownames(logcounts)[i] <- gene_symbols$external_gene_name[idx]
+#  }
+#}
 
 
 boxplot(logcounts[,1:50], xlab="", ylab="Log2 counts per million",las=2)
@@ -366,6 +380,21 @@ title("Boxplots of logCPMs (unnormalised)")
 
 
 ```
+```{r}
+# Verifica se todas as linhas começam com "ENS"
+all_ens <- all(grepl("^ENS", rownames(logcounts)))
+
+# Se 'all_ens' for TRUE, significa que todas as linhas começam com "ENS"
+if (all_ens) {
+  cat("Todas as linhas começam com 'ENS'.\n")
+} else {
+  cat("Algumas linhas não começam com 'ENS'.\n")
+}
+
+
+```
+
+
 
 Abaixo é feita a análise de expressão genética dos 10 genes com maior variabilidade detetada para a presença/ausência de oncogenes.
 
@@ -379,7 +408,7 @@ var_genes = apply(logcounts, 1, var)
 
 select_var = names(sort(var_genes, decreasing=TRUE))[1:10]
 
-head(select_var)
+select_var
 
 # Seleciona as linhas da matriz 'logcounts' com base nos índices fornecidos em 'select_var'
 
@@ -690,7 +719,7 @@ names(ranks) <- rownames(results.ord)
 ```
 
 ```{r}
-pathways <- read.gmt("~/h.all.v2023.2.Hs.symbols.gmt")
+pathways <- read.gmt("~/h.all.v2023.2.Hs.entrez.gmt")
 ```
 
 ```{r}
