@@ -632,16 +632,6 @@ points(results[detags,"logFC"],-log10(results[detags,"FDR"]),pch=16,col="red")
 
 ```
 
-```{r}
-
-# get annotation for genes in results
-ann <- select(org.Mm.eg.db,keys=rownames(results),columns=c("ENTREZID","SYMBOL","GENENAME"))
-head(ann)
-results.annotated <- cbind(results, ann)
-head(results.annotated)
-
-```
-
 
 ### 3.4.1 Para o coeficiente "exprTRU"
 
@@ -694,20 +684,6 @@ plot(results$logFC,signif,pch=16)
 points(results[detags,"logFC"],-log10(results[detags,"FDR"]),pch=16,col="red")
 
 ```
-
-
-
-
-```{r}
-
-# get annotation for genes in results
-#ann <- select(org.Mm.eg.db,keys=rownames(results),columns=c("ENTREZID","SYMBOL","GENENAME"))
-#head(ann)
-#results.annotated <- cbind(results, ann)
-#head(results.annotated)
-
-```
-
 
 #### Análise de Enriquecimento
 
@@ -806,7 +782,6 @@ resultados_ensembl_id
 ```
 
 
-
 ```{r}
 # Substituir os nomes das colunas "row_names" do dataframe "resultados_mod" pelos valores correspondentes da coluna "symbol" do dataframe "resultados_ensembl_id"
 resultados_mod$row_names <- resultados_ensembl_id$symbol[match(gsub("\\..*", "", resultados_mod$row_names), resultados_ensembl_id$ensgene)]
@@ -814,6 +789,7 @@ resultados_mod$row_names <- resultados_ensembl_id$symbol[match(gsub("\\..*", "",
 # Resultado final
 print(resultados_mod)
 ```
+
 
 ```{r}
 # Remover os nomes das linhas do dataframe
@@ -823,6 +799,7 @@ rownames(resultados_mod) <- NULL
 print(resultados_mod)
 
 ```
+
 
 ## Ranks
 

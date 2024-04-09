@@ -21,7 +21,7 @@ bibliography: referencias.bib
 ```
 # Autoria
 
-O trabalho aqui apresentado foi desenvolvido em conjunto por Mariana Oliveira (PG52648), Rui Sousa (PG21019) e Samuel Baptista (PG49130), realizado no âmbito da Unidade Curricular de Extração de Conhecimento de Dados Biológicos do Mestrado em Bioinformática. 
+O trabalho aqui apresentado foi desenvolvido em conjunto por Mariana Oliveira (PG52648), Rui Sousa (PG21019) e Samuel Baptista (PG49130), realizado no âmbito da Unidade Curricular de Extração de Conhecimento de Dados Biológicos do Mestrado em Bioinformática.
 
 # Abstract
 
@@ -29,39 +29,53 @@ A preencher na fase final do trabalho
 
 # Introdução
 
-O adenocarcinoma é uma forma de cancro maligno que se desenvolve a partir de células glandulares nos tecidos epiteliais e pode originar-se em diversas partes do corpo. Entre os tipos de adenocarcinoma mais comuns, destacam-se os que afetam a mama, pulmão, próstata, trato gastrointestinal, entre outros. [@mullangi2023] Este estudo concentra-se especificamente no adenocarcinoma do pulmão (LUAD), uma das formas de cancro com alta taxa de mortalidade. [@alberg2003] Para o adenocarcinoma do pulmão foram identificados três tipos de subtipos - *Terminal Respiratory Unit*, *Proximal Inflamatory (PI)* e *Proximal Proliferative (PP)* - estando estes subtipos associados à expressão diferenciada de diferentes genes associados ao adenocarcinoma.
+O adenocarcinoma é uma forma de cancro maligno que se desenvolve a partir de células glandulares nos tecidos epiteliais e pode originar-se em diversas partes do corpo. Entre os tipos de adenocarcinoma mais comuns, destacam-se os que afetam a mama, pulmão, próstata, trato gastrointestinal, entre outros[@mullangi2023]. Este estudo concentra-se especificamente no adenocarcinoma do pulmão (LUAD), uma das formas de cancro com alta taxa de mortalidade. [@alberg2003]. Para o adenocarcinoma do pulmão foram identificados três tipos de subtipos - *Terminal Respiratory Unit* (TRU), *Proximal Inflamatory* (PI) e *Proximal Proliferative* (PP) - estando estes subtipos associados à expressão diferenciada de diferentes genes associados ao adenocarcinoma [@ho2021cancer].
 
 Ao longo deste estudo foi desenvolvida uma análise de expressão genética diferencial para determinar a ocorrência de diferenças significativas na expressão genética entre pacientes do tipo TRU, PI e PP. Este estudo foi desenvolvido tendo em vista a identifição marcadores genéticos que possam ser úteis para diagnóstico, prognóstico e desenvolvimento de terapias direcionadas para o LUAD. Esperamos que os resultados deste estudo contribuam para uma melhor compreensão da biologia molecular desse tipo de cancro e, consequentemente, para o desenvolvimento de novas estratégias terapêuticas mais eficazes.
 
 # Materiais e métodos
 
-Foi utilizado um *data set* público do *The Cancer Genome Atlas Program* (TCGA), disponibilizado através do *NCI Genomic Data Commons* (GDC), com 600 amostras de pacientes com LUAD. [@gdc_website]
+Foi utilizado um dataset público do *The Cancer Genome Atlas Program* (TCGA), disponibilizado através do *NCI Genomic Data Commons* (GDC), com 600 amostras de pacientes com LUAD [@gdc_website].
 
-A análise dos dados foi feita utilizando a ferramenta `edgeR`, uma biblioteca desenvolvida para o Bioconductor [@bioconductor_website] da linguagem de programação R, especialmente projetada para análise de dados de expressão genética baseada em contagens de RNA-seq. A abordagem estatística empregada pelo edgeR é baseada em métodos bayesianos, permitindo uma análise robusta e precisa dos dados de expressão genética.[@edgeR_doc]
+A análise dos dados foi feita utilizando a ferramenta `edgeR`, uma biblioteca desenvolvida para o Bioconductor [@bioconductor_website] da linguagem de programação R, especialmente projetada para análise de dados de expressão genética baseada em contagens de RNA-seq. A abordagem estatística empregada pelo edgeR é baseada em métodos bayesianos, permitindo uma análise robusta e precisa dos dados de expressão genética[@edgeR_doc].
 
-Ao longo deste relatório serão apresentados os diferentes passos utilizados, desde o processamento dos dados à sua análise, pretendendo-se demonstrar e explicitar programatica a *pipeline* utilizada com vista a apresentar um trabalho claro e replicável para outros data sets.
+Ao longo deste relatório serão apresentados os diferentes passos utilizados, desde o processamento dos dados à sua análise, pretendendo-se demonstrar e explicitar programaticamente a *pipeline* utilizada com vista a apresentar um trabalho claro e replicável para outros data sets.
 
-# Análise do data set
+# Tratamento e Análise do dataset
 
 ## Pré-processamento
 
 ### Requisitos
 
-De modo a conseguir correr corretamente o código utilizado neste estudo, é recomendada a instalação das seguintes bibliotecas:
+Para esta análise de expressão diferencial com edgeR utilizamos as seguintes bibliotecas:
 
-Para esta análise de expressão diferencial com edgeR utilizamos as seguintes bibliotecas do Bioconductor:
+-   **edgeR**: uma ferramenta para análise de dados de RNA-seq, oferecendo métodos estatísticos avançados para identificar genes diferencialmente expressos.
 
--   **edgeR**: Uma ferramenta para análise de dados de RNA-seq, oferecendo métodos estatísticos avançados para identificar genes diferencialmente expressos.
+-   **limma**: reconhecido por sua flexibilidade e robustez, o limma é amplamente utilizado para análise de microarrays e RNA-seq, oferecendo uma variedade de modelos estatísticos.
 
--   **limma**: Reconhecido por sua flexibilidade e robustez, o limma é amplamente utilizado para análise de microarrays e RNA-seq, oferecendo uma variedade de modelos estatísticos.
+-   **Glimma**: essencial para visualização interativa de resultados de análise de expressão diferencial, o Glimma permite explorar e entender melhor os dados por meio de gráficos informativos.
 
--   **Glimma**: Essencial para visualização interativa de resultados de análise de expressão diferencial, o Glimma permite explorar e entender melhor os dados por meio de gráficos informativos.
+-   **gplots**: um pacote que oferece uma variedade de funções gráficas para visualização de dados, complementando as análises estatísticas.
 
--   **gplots**: Um pacote que oferece uma variedade de funções gráficas para visualização de dados, complementando as análises estatísticas.
+-   **RColorBrewer**: oferece uma ampla seleção de paletas de cores para visualização de dados, tornando as figuras mais atraentes e informativas.
 
--   **RColorBrewer**: Oferece uma ampla seleção de paletas de cores para visualização de dados, tornando as figuras mais atraentes e informativas.
+-   **TCGAbiolinks**: fundamental para acesso e análise de dados do Projeto de Carcinoma Humano (TCGA), permitindo insights valiosos sobre uma variedade de tipos de cancro.
 
--   **TCGAbiolinks**: Fundamental para acesso e análise de dados do Projeto de Carcinoma Humano (TCGA), permitindo insights valiosos sobre uma variedade de tipos de câncer.
+-   **SummarizedExperiment**: oferece uma classe de container eficiente para armazenar dados experimentais de expressão genética ou de sequenciamento, juntamente com metadados relevantes, facilitando a manipulação e análise integrada desses dados.
+
+-   **biomaRt**: interface para o banco de dados biomart, que fornece acesso a uma vasta gama de informações biológicas.
+
+-   **GSEABase**: oferece funcionalidades básicas para realizar análises de enriquecimento genético (GSEA).
+
+-   **fgsea**: implementação eficiente e rápida do algoritmo de GSEA.
+
+-   **clusterProfiler**: oferece ferramentas para realizar análises de GSEA e perfiis de cluster, facilitando a interpretação de conjuntos de genes diferencialmente expressos.
+
+-   **ggplot2**: criação de gráficos em R.
+
+-   **dplyr**: fornece uma série de funções verbais para manipulação de dados.
+
+-   **annotables**: oferece tabelas de anotação para uma variedade de conjuntos de dados, incluindo informações sobre genes.
 
 ```{r instalar-packages}
 
@@ -72,6 +86,7 @@ Para esta análise de expressão diferencial com edgeR utilizamos as seguintes b
 
 #BiocManager::install("edgeR")
 
+
   ## limma 
 
 #BiocManager::install("limma")
@@ -81,20 +96,61 @@ Para esta análise de expressão diferencial com edgeR utilizamos as seguintes b
 
 #BiocManager::install(c("Glimma"))
 
+
   ##gplots
 
 #BiocManager::install(c("gplots"))
+
 
   ##RColorBrewer
 
 #BiocManager::install(c("RColorBrewer"))
 
+
   ##TCGAbiolinks
 
-#if (!requireNamespace("TCGAbiolinks", quietly = TRUE))
-#  BiocManager::install("TCGAbiolinks")
+#BiocManager::install("TCGAbiolinks")
 
 
+  ##SummarizedExperiment
+
+#BiocManager::install("SummarizedExperiment")
+
+
+  ##biomaRt
+
+#BiocManager::install("biomaRt")
+
+
+  ##GSEABase
+
+#BiocManager::install(c("GSEABase"))
+
+
+  ##fgsea
+
+#BiocManager::install(c("fgsea"))
+
+
+  ##clusterProfiler
+
+#BiocManager::install("clusterProfiler")
+
+
+  ##ggplot2
+
+#install.packages("ggplot2")
+
+
+  ##dplyr
+
+#install.packages("dplyr")
+
+
+  #annotables
+
+#install.packages("devtools")
+#devtools::install_github("stephenturner/annotables")
 ```
 
 ```{r carregar-packages}
@@ -103,22 +159,29 @@ suppressMessages({
   library(limma)
   library(Glimma)
   library(gplots)
-  library(org.Mm.eg.db)
   library(RColorBrewer)
   library(TCGAbiolinks)
   library(SummarizedExperiment)
   library(biomaRt)
+  library(GSEABase)
+  library(fgsea)
+  library(clusterProfiler)
+  library(ggplot2)
+  library(dplyr)
+  library(annotables)
 })
 ```
 
-## Transferência e carregamento do data set e criação do objeto SummarizedExperiment
+## Transferência, carregamento e preparação dos datasets necessários
 
 Para a transferência do dataset do conjunto de dados de expressão genética, utilizou-se o pacote TCGAbiolinks, que é uma ferramenta que permite aceder e descarregar dados do TCGA. Na query, definimos a procura específica dos dados do projeto TCGA-LUAD, a categoria dos mesmos é do tipo "Perfil do Transcriptoma" e a estratégia experimental utilizada para gerar esses dados é a RNA-Seq. Os dados foram processados utilizando o algoritmo STAR para alinhamento de sequências, resultando em contagens de leitura para cada gene. Portanto, o parâmetro "workflow.type" foi especificado como "STAR - Counts". Por fim, especificamos que queremos ter acesso aos dados que estão disponíveis publicamente através do parâmetro "access".
 
 Após a transferência dos dados é então gerado um objeto `summarizedExperiment` através do código GDCprepare. Utilizam-se parâmetros para gravar os dados para simplificar o carregamento do objeto posteriormente, caso seja necessário.
 
 ```{r transferencia-carregamento-dados}
+
 # Elaboração da query para conectar ao servidor GDC
+
 #luad = GDCquery( 
 #  project = "TCGA-LUAD",
 #  data.category = "Transcriptome Profiling",
@@ -127,8 +190,11 @@ Após a transferência dos dados é então gerado um objeto `summarizedExperimen
 #  access = "open"
 #)
 
+
 # Transferência dos ficheiros
+
 #GDCdownload(luad)
+
 
 #' Carregamento dos ficheiros num objeto SummarizedExperiment
 #' 
@@ -140,18 +206,17 @@ Após a transferência dos dados é então gerado um objeto `summarizedExperimen
 #                       save.filename = 'luad_data_load.rda',
 #                       summarizedExperiment = TRUE)
 
-#' No próximo carregamento utilizar apenas o seguinte comando para não saturar o servidor 
-#' e tornar o processo mais rápido
+#' No próximo carregamento utilizar apenas o seguinte comando para não saturar o servidor e tornar o processo mais rápido
 
 load('luad_data_load.rda')
 luad_data = data
 ```
 
-### Verificação dos dados
+### Exploração inicial do dataset
 
-Abaixo procedemos a uma primeira verificação dos dados.
+Abaixo procedemos a uma pequena exploração do dataset anteriormente carregado.
 
-```{r verificacao-dados}
+```{r exploracao-dataset}
 # Tamanho do objeto
 dim(luad_data)
 
@@ -169,7 +234,7 @@ names(colData(luad_data))
 
 ```
 
-Através da informação fornecida em cima, conseguimos perceber que:
+Através da informação fornecida em cima, conseguimos saber que:
 
 -   **dim** - O objeto tem 60660 linhas, cada uma representa um gene, e 600 colunas, que representam as amostras individuais, correspondendo ao especificado na [documentação do estudo](https://portal.gdc.cancer.gov/projects/TCGA-LUAD).
 
@@ -185,11 +250,13 @@ Através da informação fornecida em cima, conseguimos perceber que:
 
 -   **colData names** - Há 89 metadados associados a cada amostra, que incluem, por exemplo, o estágio do tumor ("paper_Tumor.stage") e o género ("gender").
 
-### Preparação da estrutura de dados
+### Preparação do dataset
 
-Para chegar à estrutura desejável dos dados, realizou-se a transformação do dataset em dataframe a partir dos dados em bruto. Optou-se por extrair os dados de RNASeq correspondentes às contagens `unstranded` uma vez que a direção dos transcritos não é relevante para este trabalho.
+Para chegar à estrutura desejável dos dados, realizou-se a transformação do dataset em dataframe a partir dos dados em bruto. Optou-se por extrair os dados de RNAseq correspondentes às contagens `unstranded` uma vez que a direção dos transcritos não é relevante para este trabalho.
 
-```{r}
+Foi também verificada a presença de valores *Not available* (NA).
+
+```{r preparacao dataset}
 
 # Carregamento, extração e transformação dos dados provenientes do RNAseq 
 seqdata = as.data.frame(assay(luad_data, 'unstranded'))
@@ -199,9 +266,11 @@ any(is.na(seqdata))
 
 ```
 
-Foram também carregados os metadados, isolando os dados correspondentes à presença/ausência de oncogenes e os dados associados à variável "gender" na variável "meta".
+### Preparação do dataset com os metadados
 
-```{r}
+De seguida, foram carregados os metadados de interesse, isolando os dados correspondentes ao subtipo de expressão genética e os dados associados à variável "gender" na variável "meta".
+
+```{r criacao-meta}
 
 # Carregamento de metadados
 
@@ -215,40 +284,62 @@ meta = data.frame(sample_id = sample_id, gender = gender, expr = expr)
 
 ```
 
-De seguida, foi feita uma filtragem das colunas do dataframe `seqdata` para manter apenas as amostras que possuem informações sobre a presença/ausência de oncogenes com base nos metadados previamente tratados.
+Foi realizado o pré-processamento dos metadados. Inicialmente, foi verificada a presença de valores ausentes em ambas as variáveis do dataset garantindo que os metadados estão prontos para serem utilizados, sem valores ausentes ou inconsistentes.
 
-O resultado é armazenado na variável `seqdata_filter`, que conterá apenas as colunas de `seqdata` associadas a amostras com informações sobre os oncogenes. Esta variável servirá para, posteriormente, criar o objeto de análise de expressão genética.
+```{r pre-processamento-meta}
 
-```{r pre-processamento}
+  ##Género
 
-# Limpeza dos dados e tratamento relativo ao género
+#Verificação da presença de NAs
 
 any(is.na(meta$gender))
 
 # Converte 'gender' para factor com dois níveis
 meta$gender = factor(meta$gender, levels = c("male", "female"))
 
-table(meta$gender)
-
 filter = meta$gender != '[Not Available]'
 
 meta = meta[filter,]
 
+#Dimensões da variável
+
+table(meta$gender)
+
+
+  ##Subtipos de expressão
+
+#Verificação da presença de NAs
+
 any(is.na(meta$expr))
 
-meta = meta[!is.na(meta$expr),]
+#Eliminação das colunas correspondentes aos NAs
 
-table(meta$expr)
+meta = meta[!is.na(meta$expr),]
 
 filter = meta$expr != '[Not Available]'
 
 meta = meta[filter,]
 
+#Verificação da eliminação dos NAs
 
-# Criar uma vista dos dados de RNASeq com base nos subtipos de expressão
+any(is.na(meta$expr))
 
-seqdata_filter = seqdata[,meta$expr] 
 
+#Dimensões da variável
+
+table(meta$expr)
+
+```
+
+### Preparação do dataset (continuação)
+
+Após, foi feita uma filtragem das colunas do dataframe `seqdata` para manter apenas as amostras que possuem informação sobre o subtipo de expressão com base nos metadados previamente tratados.
+
+O resultado é armazenado na variável `seqdata_filter`, que conterá apenas as colunas de `seqdata` associadas a amostras com informação sobre o subtipo de expressão. Esta variável servirá para, posteriormente, criar o objeto de análise de expressão genética
+
+```{r criacao-seqdata_filter}
+
+seqdata_filter = seqdata[,meta$expr]
 ```
 
 Fazemos uma verificação final para garantir que os dados estão corretamente carregados e é feita a sua correspondência para garantir o correto encadeamento dos dados de expressão com as respetivas amostras.
@@ -269,34 +360,40 @@ all(names(seqdata_filter) == meta$sample_id)
 
 ```
 
-Como conseguimos observar, o número de colunas do dataframe "seqdata_filter" é igual ao número de linhas do dataframe "meta".
+Como conseguimos observar, o número de colunas do dataframe "seqdata_filter" é igual ao número de linhas do dataframe "meta". Logo, podemos confirmar o correto processamento dos dados de expressão.
 
+## Análise descritiva do dataset
 
-### Análise descritiva do data set
-
-Para iniciar a análise dos dados, realizamos uma série de análises estatísticas descritivas, visando estabelecer correlações preliminares. Primeiramente, examinamos a taxa de incidência do adenocarcinoma do pulmão entre os sexos, buscando compreender se há disparidades significativas na ocorrência da doença entre homens e mulheres. Além disso, investigamos a distribuição da taxa de incidência por faixas etárias, procurando identificar possíveis padrões de prevalência relacionados à idade.
+Para iniciar a análise dos dados, realizamos uma série de análises estatísticas descritivas, visando estabelecer correlações preliminares. Primeiramente, examinamos a taxa de incidência do adenocarcinoma do pulmão entre os géneros, de forma a compreender se há disparidades na distribuição das amostras do dataset entre homens e mulheres. Além disso, investigamos a distribuição da taxa de incidência por faixas etárias, procurando identificar possíveis padrões de prevalência relacionados à idade.
 
 Outro aspecto analisado foi a existência de correlação entre a taxa de mortalidade e o estágio do tumor. Esta análise é crucial para entender se há uma relação entre a gravidade da doença e o risco de mortalidade, o que pode fornecer insights importantes para o prognóstico e tratamento.
 
-```{r}
+```{r frequencia-genero}
+
 genero = table(luad_data$gender)
 
-colors <- c("pink", "lightblue")  # Add more colors if needed
+colors <- c("pink", "lightblue")  
+
 max_level <- 400
+
 ylim <- c(0, max_level)
+
 barplot(genero, col = colors, ylim = ylim, main = "Distribuição de Sexo", ylab = "Ocorrências")
+
 legend("topright", legend = names(genero), fill = colors)
+
 for (i in 1:length(genero)) {
   text(i, genero[i], labels = genero[i], pos = 3, cex = 0.8, col = "black")
 }
 
-chisq.test(genero)
+#chi_genero = chisq.test(genero)
 ```
-Analisando o gráfico e os resultados do teste de qui-quadrado é plausível concluir, para um intervalo de confiança de 99%, que não há uma relação entre o gênero e a incidência de LUAD. O gráfico de barras permite também perceber que há uma ampla distribuição de pacientes de ambos os sexos.
+
+Analisando os resultados do gráfico de barras, é possível concluir que há uma ampla distribuição de pacientes de ambos os sexos e que há mais amostras de mulheres comparativamente às amostras existentes de homens.
 
 Abaixo é feita uma análise da frequência de idades do *data set*.
 
-```{r}
+```{r frequencia-idade}
 ages = na.omit(luad_data$paper_Age.at.diagnosis)
 ages = ages[ages != '[Not Available]']
 ages = as.numeric(as.character(ages))
@@ -313,22 +410,21 @@ barplot(table(ages_int), main = "Distribuição de idades", xlab = "Intervalos d
 abline(h = mean(ages), col = "red", lty = 2, lwd = 1)
 legend("topright", legend = paste("Idade média:", round(mean(ages), 2)), col = "red", lty = 2, lwd = 1)
 ```
+
 Concluímos que a idade média da população do estudo é aproximadamente 66 anos e que é plausível inferir que o maior volume de incidência está entre os 59 e os 72 anos de idade.
 
-Abaixo analisamos a possível correlação entre o estágio do tumor e a taxa de mortalidade recorrendo a testes de qui-quadrado.
+Abaixo analisamos ainda a correlação entre o estágio do tumor e a taxa de mortalidade recorrendo a testes de qui-quadrado.
 
-```{r}
-# Load necessary libraries
-library(graphics)
+```{r correlacao-tumor-mortalidade}
 
 # Combinar as colunas de estado vital e estágio do tumor
 vital_stage <- data.frame(vital_status = luad_data$vital_status, tumor_stage = luad_data$paper_Tumor.stage)
 
+# Substituir "Not Available" por NA na variável tumor_stage
+vital_stage$tumor_stage <- gsub("Not Available", NA, vital_stage$tumor_stage)
+
 # Remover valores omissos
 vital_stage <- vital_stage[complete.cases(vital_stage$tumor_stage), ]
-
-# Excluir nível '[Not Available]'
-vital_stage <- vital_stage[vital_stage$tumor_stage != '[Not Available]', ]
 
 # Criação da tabela de contingência
 contingency_table <- table(vital_stage$vital_status, vital_stage$tumor_stage)
@@ -343,22 +439,24 @@ barplot(contingency_table, beside = TRUE, legend.text = TRUE,
         xlab = "Estágio tumor", ylab = "Frequência",
         col = c("lightgreen", "pink"))
 ```
-Ao analisar os resultados do teste de qui-quadrado é plausível aferir que, em função do valor de prova (0.009062) é plausível rejeitar a hipótese nula e inferir que existe uma correlação entre o estágio do tumor e a taxa de mortalidade. Uma análise do gráfico de barras em que é comparada a taxa de mortalidade por estágio de tumor permite também tirar esta conclusão, nomeadamente que a partir do estágio IIA a taxa de mortalidade é superior.
 
-## Preparação para análise de expressão diferencial
+Ao analisar os resultados do teste de qui-quadrado é plausível aferir que, em função do valor de prova (0.008561) é plausível rejeitar a hipótese nula e inferir que existe uma correlação entre o estágio do tumor e a taxa de mortalidade. Uma análise do gráfico de barras em que é comparada a taxa de mortalidade por estágio de tumor permite também tirar esta conclusão, nomeadamente que a partir do estágio IIB a taxa de mortalidade é superior.
+
+# Preparação para análise de expressão diferencial
 
 ### Normalização dos dados usando contagens por milhão (CPM)
 
-Neste processo, os dados de expressão genética são refinados antes da análise. Primeiro, é efetuado o cálculo das Contagens Por Milhão (CPM), um método de normalização de níveis de expressão comummente utilizado para análise de dados RNA-seq. Este método ajusta diferenças de profundidade da sequenciação, dando dados de expressão relativos mais facilmente comparáveis entre todos os genes da amostra. [@scheepbouwer2023 , @pluto_website] comummente utilizada importante na normalização de dados de sequenciamento.
+Neste processo, os dados de expressão genética são refinados antes da análise. Primeiro, é efetuado o cálculo das Contagens Por Milhão (CPM), um método de normalização de níveis de expressão comummente utilizado para análise de dados RNAseq. Este método ajusta diferenças de profundidade da sequenciação, dando dados de expressão relativos mais facilmente comparáveis entre todos os genes da amostra. [@scheepbouwer2023 , @pluto_website] comummente utilizada importante na normalização de dados de sequenciamento.
 
-Em seguida, os dados são ajustados para remover genes com expressão muito baixa, uma prática comum na análise de RNA-Seq. Este critério de remoção, definido como genes com CPM inferior a 0.5 em pelo menos duas amostras, é aplicado para manter apenas os genes mais relevantes. O número de genes excluídos é relatado para avaliação.
+De seguida, os dados são ajustados para remover genes com expressão muito baixa, uma prática comum na análise de RNAseq. Este critério de remoção, definido como genes com CPM inferior a 0.5 em pelo menos duas amostras, é aplicado para manter apenas os genes mais relevantes.
 
-```{r analise-exploratoria-pt1}
-# Calculamos CPM
+```{r normalizacao}
+
+# Cálculo CPM
 calccpm = cpm(seqdata_filter)
 
-# Aparamos os dados, removendo genes com baixa expressão
-# é geralmente aceite a eliminação de genes com CPM inferior a 0.5 em mais do que 2 amostras
+# Remoção de genes com baixa expressão
+
 thresh = calccpm > 0.5
 keep = rowSums(thresh) >= 2
 counts_keep = seqdata_filter[keep,]
@@ -375,7 +473,7 @@ Posteriormente, os dados são organizados num objeto `dgeObj`, adequado para an�
 
 ### Criação do objeto `dgeObj`
 
-```{r analise-exploratoria-pt2}
+```{r criacao objeto dgeObj}
 
 # Criação do objeto para a análise de expr. diferencial
 
@@ -391,7 +489,7 @@ head(dgeObj$samples)
 
 De seguida, procedeu-se à logaritmização dos dados, uma prática comum no tratamento de dados de expressão genético para posterior análise da sua diferenciação. A logaritmização é essencial para reduzir o enviesamento dos dados.
 
-```{r analise-exploratoria-pt3}
+```{r logaritmizacao}
 
 ## distributions - log transform
 logcounts = cpm(dgeObj,log=TRUE)
@@ -433,25 +531,25 @@ Considerando a extensão da amostra e a complexidade dos dados, foram criados su
 ```{r boxplots}
 boxplot(logcounts[,1:50], xlab="", ylab="Log2 counts per million",las=2)
 abline(h=median(logcounts),col="blue")
-title("Boxplots of logCPMs (unnormalised)")
+title("Boxplots de logCPMs")
 
 boxplot(logcounts[,51:100], xlab="", ylab="Log2 counts per million",las=2)
 abline(h=median(logcounts),col="blue")
-title("Boxplots of logCPMs (unnormalised)")
+title("Boxplots de logCPMs")
 
 
 boxplot(logcounts[,101:150], xlab="", ylab="Log2 counts per million",las=2)
 abline(h=median(logcounts),col="blue")
-title("Boxplots of logCPMs (unnormalised)")
+title("Boxplots de logCPMs")
 
 
 boxplot(logcounts[,151:200], xlab="", ylab="Log2 counts per million",las=2)
 abline(h=median(logcounts),col="blue")
-title("Boxplots of logCPMs (unnormalised)")
+title("Boxplots de logCPMs")
 
 boxplot(logcounts[,201:242], xlab="", ylab="Log2 counts per million",las=2)
 abline(h=median(logcounts),col="blue")
-title("Boxplots of logCPMs (unnormalised)")
+title("Boxplots de logCPMs")
 ```
 
 Ao analisar os boxplots das contagens logaritmizadas, podemos identificar a presença de outliers que nos pode indicar a existência de genes sobreexpressos ou subexpressos. Esses outliers representam observações que estão significativamente distantes da maioria dos valores no conjunto de dados. No contexto da expressão genética, os outliers podem surgir devido a vários fatores, como erros experimentais, variações biológicas extremas ou mesmo artefatos técnicos durante a geração dos dados. Genes sobreexpressos, em particular, podem ser de interesse em estudos de expressão diferencial, uma vez que podem desempenhar papéis importantes em processos biológicos específicos ou estar associados a doenças.
@@ -460,7 +558,7 @@ Portanto, a identificação e o entendimento dos outliers são cruciais para int
 
 ### Comparação de níveis de expressão para os diferentes subtipos de LUAD
 
-Abaixo é feita a análise de expressão genética dos 10 genes com maior variabilidade detetada para a presença/ausência de oncogenes com recurso a um *heatmap*. A utilização de *heatmaps* é particularmente útil para análises diferenciais de expressão genética uma vez que permite a identificação de padrões de expressão genética associados a condições específicas que podem dar pistas no sentido de identificação sobre biomarcadores para cada condição.
+Abaixo é feita a análise dos padrões de expressão genética associados a diferentes subtipos de LUAD (TRU, PI e PP) dos 10 genes com maior variabilidade detetada com recurso a um *heatmap*. A utilização de *heatmaps* é particularmente útil para análises de expressão genética uma vez que permite a identificação de padrões de expressão genética associados a condições específicas que podem dar pistas no sentido de identificação sobre biomarcadores para cada condição.
 
 Abaixo é apresentado um *heatmap* para os 30 genes com maior variabilidade em termos de níveis de expressão para cada um dos subtipos de LUAD (TRU, PI e PP).
 
@@ -490,8 +588,9 @@ col.cell1 = c("purple","orange", "green")[meta$expr]
 heatmap.2(highly_variable_lcpm, 
           col=rev(morecols(50)),
           trace="column", 
-          main="Top 10 most variable genes across samples",
-          ColSideColors=col.cell1,scale="row")
+          main="Top 10 genes mais variáveis",
+          ColSideColors=col.cell1,scale="row",
+          margins = c(5, 12))
 legend("left", legend=labels, fill=c("purple","orange","green")) # corrigir etiqueta
 
 labels = levels(meta$expr)
@@ -499,28 +598,49 @@ col.cell2 = c("purple","orange", "green")[meta$expr][1:50]
 heatmap.2(highly_variable_lcpm[,1:50], 
           col=rev(morecols(50)),
           trace="column", 
-          main="Top 10 most variable genes across samples",
-          ColSideColors=col.cell2,scale="row")
+          main="Top 10 genes mais variáveis entre 50 amostras aleatórias",
+          ColSideColors=col.cell2,scale="row",
+          margins = c(5, 12))
 legend("left", legend=labels, fill=c("purple","orange","green")) # corrigir etiqueta
 ```
 
-Ao analisar os heatmap, torna-se evidente a presença de diferentes perfis de expressão genética para cada um dos subtipos de LUAD. Em particular, os genes MTND1P, LCAL1, da família AKR1, HOXB9, NR0B1, CYP4F3 e ADH1C são sobrexpressos no subtipo TRU. No entanto, os genes MTND1P, LCAL1, AKR1B10, NR0B1, CYP4F3 apresentam níveis de expressão médios para os subtipos PP e PI, sugerindo que podem não desempenhar um papel significativo nesses fenótipos.
+Ao analisar os heatmaps, torna-se evidente a presença de diferentes perfis de expressão genética para cada um dos subtipos de LUAD. Em primeiro lugar efetuou-se uma pesquisa sobre a correspondência dos *gene ID*s através dos respetivos *Ensembl ID*s.
 
-Além disso, observa-se que no subtipo PP destacam-se a sobrexpressão dos genes SLC10A2 e AC079466 (ENSG00000266976), com níveis de expressão dentro da média para os outros subtipos. No entanto, também é visível uma ligeira sobrexpressão do gene ADH1C e a subexpressão do gene AKR1C2. No subtipo PI, destaca-se a subexpressão do gene ADH1C e uma ligeira sobrexpressão dos genes SLC10A2 e AC079466.
+-   ENSG00000151632 → AKR1C2
 
-Esses resultados sugerem que os genes da família AKR1 (Aldo Ceto Reductases), estando de acordo com a literatura, onde estes genes aparecem tipicamente associados à proliferação. [@xiao2021] Atendendo aos resultados é plausível considerá-los como biomarcadores dos subtipos de LUAD e ainda indicadores para a diferenciação entre os subtipos.
+-   ENSG00000248144 → ADH1C
 
-*Para desenvolver sobre AKR1B10: <https://pubmed.ncbi.nlm.nih.gov/37717980/>*
+-   ENSG00000225972 → MTND1P
+
+-   ENSG00000286042 → LCAL1
+
+-   ENSG00000186529 → CYP4F3
+
+-   ENSG00000170689 → HOXB9
+
+-   ENSG00000169297 → NR0B1
+
+-   ENSG00000198074 → AKR1B10
+
+-   ENSG00000125255 → SLC10A2
+
+-   ENSG00000266976 → AC079466
+
+Conseguiu-se concluir que os genes MTND1P, LCAL1, da família AKR1, HOXB9, NR0B1, CYP4F3 e ADH1C são sobrexpressos no subtipo TRU. Além disso, observa-se que no subtipo PP destacam-se a sobrexpressão dos genes SLC10A2 e AC079466 (ENSG00000266976), com níveis de expressão dentro da média para os outros subtipos. No entanto, também é visível uma ligeira sobrexpressão do gene ADH1C e a subexpressão do gene AKR1C2. No subtipo PI, destaca-se a subexpressão do gene ADH1C e uma ligeira sobrexpressão dos genes AKR1C2, SLC10A2 e AC079466
+
+Esses resultados sugerem que os genes da família AKR1 (Aldo Ceto Reductases), estão de acordo com a literatura pois, aparecem tipicamente associados à proliferação [@xiao2021]. Atendendo aos resultados é plausível considerá-los como biomarcadores dos subtipos de LUAD e ainda indicadores para a diferenciação entre os subtipos.
 
 Adicionalmente, os genes SLC10A2 e AC079466 também mostram potencial como biomarcadores dos tipos de tumor proximal, com diferenças notáveis entre os subtipos PI e PP.
 
-O gene SLC10A2, é um responsável pela codificação de transportadores de solutos, tendo sido identificado como gene de interesse para a inibição da proliferação de cancro e promoção da aptose sob terapia com bexaroteno. [@ai2018] Uma próxima análise que seria relevante para tirar conclusões acerca destes resultados seria a análise do tipo de terapia a que os pacientes da amostra foram submetidos.
+O gene SLC10A2, é um responsável pela codificação de transportadores de solutos, tendo sido identificado como gene de interesse para a inibição da proliferação de cancro e promoção da aptose sob terapia com bexaroteno [@ai2018]. Uma próxima análise que seria relevante para tirar conclusões acerca destes resultados seria a análise do tipo de terapia a que os pacientes da amostra foram submetidos.
 
-O gene AC079466, em conjunto com genes da família LINC0 (que também são identificados como genes com grande variabilidade de expressão, ainda que estejam no top 50), aparentam desempenhar um papel importante na regulação do complexo DISC1, indiciado como potencial contribuinte para o desenvolvimento de tumores e respostas imunitárias. [@zheng2023]
+O gene AC079466, em conjunto com genes da família LINC0 (que também são identificados como genes com grande variabilidade de expressão, ainda que estejam no top 50), aparentam desempenhar um papel importante na regulação do complexo DISC1, indiciado como potencial contribuinte para o desenvolvimento de tumores e respostas imunitárias [@zheng2023].
+
+Seria ainda relevante fazer uma análise mais aprofundada sobre este gene, incluindo analisando os níveis de (sub/sobre)expressão dos genes RNF152 e IRAK1, tendo sido documentado o seu papel na regulação da expressão do gene AKR1B10 possivelmente revertendo o fenótipo do tumor e sua malignidade [@zhu2023].
 
 ### Normalização por Trimmed Means of M-values (TMM)
 
-A normalização dos dados de RNA-seq desempenha um papel crucial no processo de análise realizado pelo edgeR. Por meio do método de Trimmed Means of M-values (TMM), as contagens de leitura são ajustadas levando em consideração a composição global das amostras, o que corrige variações introduzidas durante o sequenciamento. Ao aplicar a função `calcNormFactors()`, o edgeR calcula os fatores de normalização (escala) com base na técnica TMM, assegurando uma correção adequada das diferenças observadas entre as amostras.
+A normalização dos dados de RNAseq desempenha um papel crucial no processo de análise realizado pelo edgeR. Por meio do método de Trimmed Means of M-values (TMM), as contagens de leitura são ajustadas levando em consideração a composição global das amostras, o que corrige variações introduzidas durante o sequenciamento. Ao aplicar a função `calcNormFactors()`, o edgeR calcula os fatores de normalização (escala) com base na técnica TMM, assegurando uma correção adequada das diferenças observadas entre as amostras.
 
 O código fornecido ilustra a aplicação desse processo ao objeto de dados `dgeObj`. Em seguida, são gerados gráficos de diferença de média versus média (MD) para visualizar o efeito da normalização nos dados. Esses gráficos permitem avaliar se as variações biológicas são mantidas após o ajuste das contagens, destacando a ausência de diferenças médias entre as amostras como referência para a eficácia da normalização.
 
@@ -546,13 +666,11 @@ dgeObj
 
 # Análise de expressão diferencial e de enriquecimento
 
-Para a análise de expressão diferencial agruparam-se duas variáveis com base em duas características selecionadas por nós: género e subtipo de expressão. Ao agrupar as amostras com base nessas características, podemos comparar os diferentes níveis de expressão de genes entre os dois tipos de género e os três subtipos de expressão, permitindo a identificação de genes cuja expressão está associada a essas características.
-
-Assim, esta análise permitirá ganhar insights sobre a regulação genética subjacente às condições biológicas selecionadas
+Na condução da análise de expressão diferencial, selecionou-se a variável correspondente aos subtipos de expressão. Através da agregação de amostras com base nessas características, procuramos comparar os níveis de expressão genética entre os três subtipos - TRU, PI, PP- permitindo identificar genes cujas expressões estão correlacionadas com essas nuances biológicas.
 
 ## Agrupamento de variáveis
 
-Em primeiro lugar, agruparam-se numa variável as duas variáveis selecionadas para a análise da expressão genética e, de seguida, coverteu-se a variável "group" para o tipo "caractér" para permitir futura compatibilidade com as operação efetuadas.
+Em primeiro lugar, colocaram-se os dados referentes aos subtipos de expressão numa variável e, de seguida, coverteu-se a variável "meta_expr" para o tipo "caractér" para permitir futura compatibilidade com as operação efetuadas.
 
 ```{r}
 
@@ -560,40 +678,38 @@ Em primeiro lugar, agruparam-se numa variável as duas variáveis selecionadas p
 meta$expr <- gsub("prox.-prolif.", "prox_prolif", meta$expr)
 meta$expr <- gsub("prox.-inflam", "prox_inflam", meta$expr)
 
-group = paste(meta$expr)
+meta_expr = paste(meta$expr)
 
-group = as.character(group)
+meta_expr = as.character(meta_expr)
 
-group
+meta_expr
 
 ```
 
 ## Criação da matriz de design
 
-A matriz de design expecifica o desenho experimental e as variáveis de interesse na análise de expressão diferencial.
+A matriz de design desempenha um papel fundamental na especificação do desenho experimental e na identificação das variáveis de interesse na análise de expressão diferencial.
 
-Foram extraídas as variáveis de interesse, "gender_dge" e "expr_dge" e, de seguida, criada a matriz de design.
+Foi feito o delineamento do processo de definição da variável de design.
 
 ```{r}
 
 # Definir a variável de design
 
-design = model.matrix(~group)
+design = model.matrix(~meta_expr)
 
 
 head(design)
 
 ```
 
-Podemos observar que foram excluídos dois níveis "male" e "prox.-prolif" A exclusão dos dois níveis das variáveis na matriz de design ocorreu porque, ao criar a matriz de design com a fórmula \~ expr + gender, o R utiliza o esquema de codificação dummy para representar variáveis categóricas. Esse esquema cria uma coluna para cada nível da variável categórica, exceto um, que serve como referência.
+Podemos observar que foi excluído o nível "prox_inflam". A exclusão deste nível da variável na matriz de design ocorreu porque o R utiliza o esquema de codificação dummy para representar variáveis categóricas [@GfG_2023]. É criada uma coluna para cada nível da variável categórica, exceto um, que serve como referência.
 
 No caso de variáveis categóricas uma coluna é criada para cada nível único, exceto um, que é excluído para evitar redundância de informações. Portanto, o R exclui automaticamente um nível para evitar a redundância de informações na matriz de design.
 
-## Ajuste de model
+## Ajuste do modelo
 
-Um dos passos mais importantes na análise de dados de expressão genética diferencial usando um modelo Binomial Negativo, como é o caso do edgeR, é a medição do grau de variação de cada gene. Ajustar o modelo, usando o pacote edgeR, envolve três passos. Em primeiro lugar, estima-se a variação comum, "estimateCommonDisp", que nos dá uma ideia da dispersão geral do genoma para o conjunto de dados selecionado.
-
-<https://web.stanford.edu/class/bios221/labs/rnaseq/lab_4_rnaseq.html>
+Um dos passos mais importantes na análise de dados de expressão genética diferencial usando um modelo Binomial Negativo, como é o caso do edgeR, é a medição do grau de variação de cada gene. Ajustar o modelo, usando o pacote edgeR, envolve três passos. Em primeiro lugar, estima-se a variação comum, "estimateCommonDisp", que nos dá uma ideia da dispersão geral do genoma para o conjunto de dados selecionado [@stanfordSequenceAnalysis].
 
 ```{r}
 dgeObj = estimateCommonDisp(dgeObj)
@@ -602,6 +718,8 @@ dgeObj$common.dispersion
 
 ```
 
+O valor de 0.4372775 para a dispersão comum sugere que há uma quantidade moderada de variabilidade nos dados entre os subtipos de adenocarcinoma do pulmão. Logo, os níveis de expressão genética podem variar significativamente em relação à média.
+
 Depois, é necessário ajustar um modelo de tendência que consiste na dispersão média entre todos os genes com abundância semelhante. Ou seja, é o valor ajustado da tendência da dispersão média.
 
 ```{r}
@@ -609,7 +727,7 @@ dgeObj = estimateGLMTrendedDisp(dgeObj)
 
 ```
 
-Por último, foi calculada a dispersão "Tagwise".
+Por último, foi calculada a dispersão "Tagwise". Este tipo de dispersão é uma medida estatística que quantifica a variabilidade dos dados de expressão genética em relação à média em cada grupo de condições experimentais.
 
 ```{r}
 dgeObj = estimateTagwiseDisp(dgeObj)
@@ -622,11 +740,13 @@ Podemos observar a representação gráfica do coeficiente de variação biológ
 plotBCV(dgeObj)
 ```
 
-O modelo NB pode ser alargado com métodos de quasi-likehood (QL) para ter em conta a variabilidade específica do gene de fontes biológicas e técnicas. O modelo NB descreve a variabilidade biológica global em todos os genes. Já os métodos QL, são capazes de descrever a variabilidade específica do gene acima e abaixo do nível global.
+No eixo x, a média log CPM representa a abundância média dos genes nos diferentes grupos ou condições, sendo que valores mais altos indicam maior expressão média dos genes. No eixo y, o BCV mede a variabilidade biológica dos dados de expressão genética, com valores mais altos indicando maior variabilidade entre os genes.
 
-<https://rest.neptune-prod.its.unimelb.edu.au/server/api/core/bitstreams/3e89dfc8-449b-5463-a53d-7c10e31add5e/content>
+Os pontos pretos no gráfico representam dados individuais de cada gene, enquanto duas linhas são colocadas: uma linha vermelha (*Common*) que permanece relativamente plana, e uma linha azul (*Trend*) que segue um padrão semelhante à linha vermelha.
 
-A estimativa das dispersões de QL é efectuada utilizando a função glmQLFit. Esta função é utilizada para ajustar o modelo, e os resultados são armazenados na variável "fit":
+Podemos verificar o que parecem ser padrões de genes (a preto) e que poderão indicar diferentes comportamentos de grupos de genes em relação à abundância média.
+
+De seguida, foi feito o ajuste do modelo, que segue uma distribuição negativa binomial, às contagens de leituras para cada gene. Para tal, foi utilizada a função **glmFit** que realiza um ajuste aos dados de expressão genética estimando os coeficientes do modelo para cada gene com base nos dados de expressão e na matriz de design especificada.
 
 ```{r}
 
@@ -640,13 +760,19 @@ Devolveu um objeto DGEGLM com os valores estimados dos coeficientes GLM para cad
 
 Cada coeficiente representa a mudança esperada na expressão para um aumento unitário na respectiva variável independente, mantendo todas as outras variáveis constantes. Por exemplo:
 
--   Um aumento unitário em "exprprox.-inflam" está associado a uma diminuição de 0.09420212 unidades na expressão genética do gene ENSG00000000003.15.
--   Um aumento unitário em "exprTRU" está associado a um aumento de 0.4591496 unidades na expressão do gene ENSG00000000419.1.
--   A variável "genderfemale" é uma variável binária, então o coeficiente representa a diferença na expressão genética entre indivíduos do sexo feminino e masculino. Neste caso, o coeficiente é muito próximo de zero, indicando que não há uma diferença significativa na expressão genética entre os dois géneros neste modelo.
+-   Um aumento unitário em "meta_exprprox_prolif" (subtipo PP) está associado a uma diminuição de 0.09420212 unidades na expressão genética do gene ENSG00000000003.15 (TSPAN6). Estes dados estão de acordo com a literatura uma vez que, a baixa expressão de TSPAN6 correlaciona-se com um mau prognóstico em pacientes com cancro do pulmão [@humbert2022tspan6].
+
+-   Um aumento unitário em "meta_exprTRU" (subtipo TRU) está associado a um aumento de 0.4591496 unidades na expressão do gene ENSG00000000419.1 (DPM1). Este faz parte da via de glicosilação do distroglicano e foram encontradas relação entre a sua sobreexpressão e o desenvolvimento de cancro [@li2020dpm1].
 
 ## Teste de Razão de Verossimilhança (LRT)
 
-### Para o coeficiente "exprprox.-inflam"
+Seguidamente, foi realizado um teste de razão de verossimilhança (LRT) onde se compararam dois modelos: um incluindo um coeficiente específico para o subtipo PP do adenocarcinoma do pulmão e outro sem esse coeficiente.
+
+-   A hipótese nula é de que o coeficiente não é significativo.
+
+### Para o subtipo PP
+
+A função 'glmLRT' é aplicada ao modelo 'fit' para calcular a estatística do teste, enquanto a função 'topTags' é usada para extrair os principais resultados do LRT, incluindo valores de p, p-ajustados e tamanhos de efeito para o coeficiente testado.
 
 ```{r}
 
@@ -665,13 +791,11 @@ dim(results)
 summary(de <- decideTestsDGE(lrt.BvsL))
 ```
 
-A variável "exprprox.-inflam" representa a expressão genética de genes associados à ??????. Os resultados do teste de verossimilhança indicam:
+Cada linha representa um gene específico e inclui informações como a magnitude da mudança na expressão entre os subtipos, indicada pelo Log Fold Change (logFC), e a significância estatística dessa associação, representada pelo valor de P.
 
--   logFC: Reflete a magnitude da mudança na expressão genética desses genes em comparação com a média de todos os genes. Valores positivos significam aumento na expressão, enquanto negativos indicam diminuição.Os valores de logFC variam entre -9.728 e 10.289, indicando uma ampla gama de mudanças na expressão genética dos genes associados à ?????. Isso sugere que alguns genes têm uma expressão significativamente aumentada em resposta à ?????, enquanto outros têm uma expressão significativamente reduzida.
+Ao analisar os resultados, observamos que alguns genes têm uma expressão significativamente aumentada no subtipo PP, enquanto outros apresentam uma expressão significativamente reduzida. Esses genes podem desempenhar papéis importantes na progressão ou patogênese específica do subtipo PP do adenocarcinoma do pulmão.
 
--   PValue e FDR: Indicam a significância estatística dessas mudanças na expressão. Valores baixos sugerem que as mudanças são estatisticamente significativas.Todos os valores apresentados de PValue e FDR são muito próximos de zero, o que indica uma forte evidência estatística de que as mudanças observadas na expressão genética são significativas. Isso sugere que as diferenças na expressão dos genes associados à ??????? são altamente improváveis de ocorrerem ao acaso e são muito confiáveis.
-
-Os genes foram classificados como "Up" (expressão aumentada), "Down" (expressão reduzida) ou "NotSig" (não significativo) em relação à inflamação. A maioria dos genes (8626) está classificada como "Up", indicando aumento da expressão em resposta à ?????????, enquanto 8428 genes estão classificados como "Down", indicando redução da expressão. Além disso, 2475 genes não mostram uma mudança significativa na expressão em resposta à ?????????.
+Por exemplo, o gene ENSG00000288638.1 (LNCDAT) mostra uma diminuição significativa na expressão no subtipo PP, com um valor de P extremamente baixo, indicando uma forte associação estatística. Por outro lado, o gene ENSG00000232878 (TNF) exibe um aumento significativo na expressão no subtipo PP, também com um valor de P muito baixo. Este último encontra-se associado à forte proliferação de tumores [@wu2010tnf].
 
 De seguida, criou-se um gráfico de dispersão dos valores de log fold-change em relação à média de contagens para cada gene, destacando os genes diferencialmente expressos identificados.
 
@@ -692,17 +816,7 @@ points(results[detags,"logFC"],-log10(results[detags,"FDR"]),pch=16,col="red")
 
 ```
 
-```{r}
-
-# get annotation for genes in results
-#ann <- select(org.Mm.eg.db,keys=rownames(results),columns=c("ENTREZID","SYMBOL","GENENAME"))
-#head(ann)
-#results.annotated <- cbind(results, ann)
-#head(results.annotated)
-
-```
-
-### Para o coeficiente "exprTRU"
+### Para o subtipo TRU
 
 ```{r}
 
@@ -721,15 +835,9 @@ dim(results)
 summary(de <- decideTestsDGE(lrt.BvsL))
 ```
 
-Com base nos resultados fornecidos para o coeficiente "exprTRU":
+Os resultados apresentam a associação entre o subtipo TRU do adenocarcinoma do pulmão e a expressão genética de diferentes genes.
 
--   logFC: Os valores de logFC variam entre -10.591 e 9.348, indicando uma ampla gama de mudanças na expressão genética dos genes associados à condição representada pela variável "exprTRU". Logo, sugere que alguns genes têm uma expressão significativamente aumentada em resposta a essa condição, enquanto outros têm uma expressão significativamente reduzida.
-
--   PValue e FDR: Todos os valores de PValue e FDR são muito próximos de zero, indicando uma forte evidência estatística de que as mudanças observadas na expressão gênica são significativas. Isso sugere que as diferenças na expressão dos genes associados à condição representada por "exprTRU" são altamente improváveis de ocorrerem ao acaso e são muito confiáveis do ponto de vista estatístico.
-
-Portanto, com base nos dados fornecidos, podemos concluir que há uma associação significativa entre a condição representada por "exprTRU" e a expressão genética dos genes estudados. Alguns genes têm sua expressão aumentada em resposta a essa condição, enquanto outros têm sua expressão reduzida, e essas mudanças são altamente confiáveis do ponto de vista estatístico.
-
-EXPLORAR SIGNIFICADO BIOLÓGICO
+Ao analisar os resultados, observamos que diversos genes, por exemplo, o gene ENSG00000073756.12 (PTGS.2) apresenta uma diminuição significativa na expressão no subtipo TRU, com um valor de P muito baixo, indicando uma forte associação estatística.
 
 De seguida, criou-se um gráfico de dispersão dos valores de log fold-change em relação à média de contagens para cada gene, destacando os genes diferencialmente expressos identificados.
 
@@ -749,20 +857,6 @@ plot(results$logFC,signif,pch=16)
 points(results[detags,"logFC"],-log10(results[detags,"FDR"]),pch=16,col="red")
 
 ```
-
-```{r}
-
-# get annotation for genes in results
-#ann <- select(org.Mm.eg.db,keys=rownames(results),columns=c("ENTREZID","SYMBOL","GENENAME"))
-#head(ann)
-#results.annotated <- cbind(results, ann)
-#head(results.annotated)
-
-```
-
-
-
-
 
 # Bibliografia
 
