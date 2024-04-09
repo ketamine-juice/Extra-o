@@ -101,6 +101,10 @@ Para esta análise de expressão diferencial com edgeR utilizamos as seguintes b
 
 #BiocManager::install("clusterProfiler")
 
+  #Package para conversão de Ensembl para Gene ID
+#install.packages("devtools")
+#devtools::install_github("stephenturner/annotables")
+
 ```
 
 De seguida, foi efetuado o carregamento das bibliotecas que haviam sido instaladas.
@@ -119,6 +123,9 @@ suppressMessages({
   library(GSEABase)
   library(fgsea)
   library(clusterProfiler)
+  library(ggplot2)
+  library(dplyr)
+  library(annotables)
 })
 
 ```
@@ -628,10 +635,10 @@ points(results[detags,"logFC"],-log10(results[detags,"FDR"]),pch=16,col="red")
 ```{r}
 
 # get annotation for genes in results
-#ann <- select(org.Mm.eg.db,keys=rownames(results),columns=c("ENTREZID","SYMBOL","GENENAME"))
-#head(ann)
-#results.annotated <- cbind(results, ann)
-#head(results.annotated)
+ann <- select(org.Mm.eg.db,keys=rownames(results),columns=c("ENTREZID","SYMBOL","GENENAME"))
+head(ann)
+results.annotated <- cbind(results, ann)
+head(results.annotated)
 
 ```
 
@@ -688,6 +695,9 @@ points(results[detags,"logFC"],-log10(results[detags,"FDR"]),pch=16,col="red")
 
 ```
 
+
+
+
 ```{r}
 
 # get annotation for genes in results
@@ -707,25 +717,180 @@ A análise de enriquecimento é realizada sobre o conjunto de genes alvo, identi
 
 head(dgeObj$samples)
 ```
+## Funções necessárias
 
 ```{r}
-results.ord <- results[ order(-results[,"logFC"]), ]
+
+matrix_to_list <- function(pws){
+  pws.l <- list()
+  for (pw in colnames(pws)) {
+    pws.l[[pw]] <- rownames(pws)[as.logical(pws[, pw])]
+  }
+  return(pws.l)
+}
+## Function: prepare_gmt --------------------------------------
+prepare_gmt <- function(gmt_file, genes_in_data, savefile = FALSE){
+  # for debug
+  #file <- gmt_files[1]
+  #genes_in_data <- df$gene_symbol
+  
+  # Read in gmt file
+  gmt <- gmtPathways(gmt_file)
+  hidden <- unique(unlist(gmt))
+  
+  # Convert gmt file to a matrix with the genes as rows and for each go annotation (columns) the values are 0 or 1
+  mat <- matrix(NA, dimnames = list(hidden, names(gmt)),
+                nrow = length(hidden), ncol = length(gmt))
+  for (i in 1:dim(mat)[2]){
+    mat[,i] <- as.numeric(hidden %in% gmt[[i]])
+  }
+  
+  #Subset to the genes that are present in our data to avoid bias
+  hidden1 <- intersect(genes_in_data, hidden)
+  mat <- mat[hidden1, colnames(mat)[which(colSums(mat[hidden1,])>5)]] # filter for gene sets with more than 5 genes annotated
+  # And get the list again
+  final_list <- matrix_to_list(mat) # for this we use the function we previously defined
+  
+  if(savefile){
+    saveRDS(final_list, file = paste0(gsub('.gmt', '', gmt_file), '_subset_', format(Sys.time(), '%d%m'), '.RData'))
+  }
+  
+  print('Wohoo! .gmt conversion successfull!:)')
+  return(final_list)
+}
+```
+
+## Aprimoramento dos resultados
+
+```{r}
+                ############ 1  ##############
+# First, convert the row names to a new column
+results$row_names <- rownames(results)
+
+# Now, rearrange the columns so that the 'row_names' column comes first
+resultados_mod <- results[, c("row_names", names(results)[-ncol(results)])]
+
+# Optionally, you can rename the 'row_names' column if needed
+# colnames(df)[1] <- "Row_List"
+
+# Assuming 'df' is your dataframe and 'row_names' is the column containing row names
+resultados_mod$row_names <- sub("\\..*", "", resultados_mod$row_names)
+
+print(resultados_mod)
+
+#Variável
+
+my_genes = resultados_mod$row_names
+
+
+# Filter 'grch38' based on 'row_names' from 'resultados_mod'
+resultados_id <- grch38 %>%
+  filter(ensgene %in% resultados_mod$row_names) %>%
+  # Select only the 'entrez' column
+  select(symbol)
+
+
+resultados_ensembl_id <- grch38 %>%
+  filter(ensgene %in% resultados_mod$row_names) %>%
+  # Select only the 'entrez' column
+  select(ensgene, symbol)
+
+# Print the filtered table
+print(resultados_id)
+
+resultados_id = as.data.frame(resultados_id)
+
+resultados_ensembl_id
+
+
+```
+
+
+
+```{r}
+# Substituir os nomes das colunas "row_names" do dataframe "resultados_mod" pelos valores correspondentes da coluna "symbol" do dataframe "resultados_ensembl_id"
+resultados_mod$row_names <- resultados_ensembl_id$symbol[match(gsub("\\..*", "", resultados_mod$row_names), resultados_ensembl_id$ensgene)]
+
+# Resultado final
+print(resultados_mod)
+```
+
+```{r}
+# Remover os nomes das linhas do dataframe
+rownames(resultados_mod) <- NULL
+
+# Resultado final
+print(resultados_mod)
+
+```
+
+## Ranks
+
+
+```{r}
+
+results.ord <- resultados_mod[ order(-results[,"logFC"]), ]
 
 epsilon <- runif(sum(duplicated(results.ord$logFC)), min = 0, max = .001)
 results.ord$logFC[duplicated(results.ord$logFC)] <- results.ord$logFC[duplicated(results.ord$logFC)] + epsilon
 
 ranks <- results.ord$logFC
-names(ranks) <- rownames(results.ord)
+names(ranks) <- results.ord$row_names
+
+head(ranks)
+
+#ranks <- sort(ranks, decreasing = TRUE) # sort genes by ranking
+plot(ranks)
+
+barplot(ranks)
+
 ```
 
-```{r}
-pathways <- read.gmt("~/h.all.v2023.2.Hs.entrez.gmt")
-```
 
 ```{r}
-fgseaRes <- fgsea(pathways, ranks, minSize=10, maxSize = 1000)
+
+vector = unlist(resultados_id)
+
+#Carregar ficheiro gmt
+
+bg_genes = prepare_gmt("C:\\Users\\olive\\Desktop\\Extracao\\c2.cp.v2023.2.Hs.symbols.gmt", vector, savefile = FALSE)
+```
+
+
+```{r}
+# Some genes have such low p values that the signed pval is +- inf, we need to change it to the maximum * constant to avoid problems with fgsea
+max_ranking <- max(ranks[is.finite(ranks)])
+min_ranking <- min(ranks[is.finite(ranks)])
+rankings <- replace(ranks, ranks > max_ranking, max_ranking * 10)
+rankings <- replace(ranks, ranks < min_ranking, min_ranking * 10)
+rankings <- sort(ranks, decreasing = TRUE) # sort genes by ranking
+```
+
+
+```{r}
+fgseaRes <- fgsea(pathways = bg_genes, 
+                  stats = rankings,
+                  scoreType = 'std',
+                  minSize=10, 
+                  maxSize = 1000)
 class(fgseaRes)
 dim(fgseaRes)
 head(fgseaRes[order(padj), ])
 ```
+
+
+```{r}
+ggplot(data.frame(gene_symbol = names(ranks)[1:50], ranks = ranks[1:50]), aes(gene_symbol, ranks)) + 
+	geom_point() +
+	theme_classic() + 
+	theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+
+
+
+
+
+
+
 
