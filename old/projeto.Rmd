@@ -597,9 +597,9 @@ topTags(lrt.BvsL)
 -   Resultados e visualização destes
 
 ```{r}
-results <- as.data.frame(topTags(lrt.BvsL,n = Inf))
-results
-dim(results)
+results_PP <- as.data.frame(topTags(lrt.BvsL,n = Inf))
+results_PP
+dim(results_PP)
 summary(de <- decideTestsDGE(lrt.BvsL))
 ```
 
@@ -626,9 +626,19 @@ Foi ainda criado um volcano plot onde os genes diferencialmente expressos identi
 
 ```{r}
 
-signif <- -log10(results$FDR)
-plot(results$logFC,signif,pch=16)
-points(results[detags,"logFC"],-log10(results[detags,"FDR"]),pch=16,col="red")
+signif <- -log10(results_PP$FDR)
+plot(results_PP$logFC,signif,pch=16)
+points(results_PP[detags,"logFC"],-log10(results_PP[detags,"FDR"]),pch=16,col="red")
+
+```
+
+```{r}
+
+# get annotation for genes in results_PP
+#ann <- select(org.Mm.eg.db,keys=rownames(results_PP),columns=c("ENTREZID","SYMBOL","GENENAME"))
+#head(ann)
+#results.annotated <- cbind(results_PP, ann)
+#head(results.annotated)
 
 ```
 
@@ -648,9 +658,9 @@ topTags(lrt.BvsL)
 -   Resultados e visualização destes
 
 ```{r}
-results <- as.data.frame(topTags(lrt.BvsL,n = Inf))
-results
-dim(results)
+results_TRU <- as.data.frame(topTags(lrt.BvsL,n = Inf))
+results_TRU
+dim(results_TRU)
 summary(de <- decideTestsDGE(lrt.BvsL))
 ```
 
@@ -679,24 +689,38 @@ Foi ainda criado um volcano plot onde os genes diferencialmente expressos identi
 
 ```{r}
 
-signif <- -log10(results$FDR)
-plot(results$logFC,signif,pch=16)
-points(results[detags,"logFC"],-log10(results[detags,"FDR"]),pch=16,col="red")
+signif <- -log10(results_TRU$FDR)
+plot(results_TRU$logFC,signif,pch=16)
+points(results_TRU[detags,"logFC"],-log10(results_TRU[detags,"FDR"]),pch=16,col="red")
 
 ```
+
+
+
+
+```{r}
+
+# get annotation for genes in results_TRU
+#ann <- select(org.Mm.eg.db,keys=rownames(results_TRU),columns=c("ENTREZID","SYMBOL","GENENAME"))
+#head(ann)
+#results.annotated <- cbind(results_TRU, ann)
+#head(results.annotated)
+
+```
+
 
 #### Análise de Enriquecimento
 
-A análise de enriquecimento é realizada sobre o conjunto de genes alvo, identificados por através da análise de expressão diferencial. O conjunto de genes identificados é comparado com outros conjuntos de genes, onde cada um destes contém genes biologicamente coerentes
+A análise de enriquecimento é realizada sobre o conjunto de genes alvo, identificados através da análise de expressão diferencial. O conjunto de genes identificados é comparado com outros conjuntos de genes, onde cada um destes contém genes biologicamente coerentes.
 
-```{r}
+Assim, foram realizadas duas análises de enriquecimento, uma para o conjunto de genes alvo do coeficiente "exprprox.-inflam" e outra para o conjunto de genes alvo do coeficiente "exprTRU", onde seguimos este pipeline: https://biostatsquid.com/fgsea-tutorial-gsea/
 
-head(dgeObj$samples)
-```
+Para ser possível realizar a análise recorremos às seguintes funções retiradas e adaptadas da mesma fonte.
+
 ## Funções necessárias
 
 ```{r}
-
+# Function: Adjacency matrix to list -------------------------
 matrix_to_list <- function(pws){
   pws.l <- list()
   for (pw in colnames(pws)) {
@@ -731,138 +755,245 @@ prepare_gmt <- function(gmt_file, genes_in_data, savefile = FALSE){
     saveRDS(final_list, file = paste0(gsub('.gmt', '', gmt_file), '_subset_', format(Sys.time(), '%d%m'), '.RData'))
   }
   
-  print('Wohoo! .gmt conversion successfull!:)')
+  #print('Wohoo! .gmt conversion successfull!:)') # optional
   return(final_list)
 }
 ```
 
-## Aprimoramento dos resultados
+## Tratamento dos resultados obtidos através da análise de expressão diferencial
+
+Posteriormente realizamos uma série de alterações aos resultados da análise de expressão diferencial de modo a obter o data frame com os resultados da análise de expressão diferencial, com os gene symbols como ids dos genes (linhas), ao invés dos ensembl ids. No entanto, neste processo alguns ensembl ids não conseguiram ser convertidos em gene symbols, ficando a coluna com missing values. Uma possível melhoria ao trabalho seria resolver este problema, que torna a análise mais difícil caso os genes com missing ids tenham uma expressão diferencial significativa. Os resultados da análise de expressão diferencial após este tratamento ficaram armazenados nas variáveis results_PP_mod e results_Tru_mod.
 
 ```{r}
-                ############ 1  ##############
 # First, convert the row names to a new column
-results$row_names <- rownames(results)
+results_PP$row_names <- rownames(results_PP)
+results_TRU$row_names <- rownames(results_TRU)
 
 # Now, rearrange the columns so that the 'row_names' column comes first
-resultados_mod <- results[, c("row_names", names(results)[-ncol(results)])]
+results_PP_mod <- results_PP[, c("row_names", names(results_PP)[-ncol(results_PP)])]
+results_Tru_mod <- results_TRU[, c("row_names", names(results_TRU)[-ncol(results_TRU)])]
 
 # Optionally, you can rename the 'row_names' column if needed
 # colnames(df)[1] <- "Row_List"
 
 # Assuming 'df' is your dataframe and 'row_names' is the column containing row names
-resultados_mod$row_names <- sub("\\..*", "", resultados_mod$row_names)
+results_PP_mod$row_names <- sub("\\..*", "", results_PP_mod$row_names)
+results_Tru_mod$row_names <- sub("\\..*", "", results_Tru_mod$row_names)
 
-print(resultados_mod)
+print(results_PP_mod)
+print(results_Tru_mod)
 
 #Variável
 
-my_genes = resultados_mod$row_names
-
+my_genes_PP = results_PP_mod$row_names
+my_genes_Tru = results_Tru_mod$row_names
 
 # Filter 'grch38' based on 'row_names' from 'resultados_mod'
-resultados_id <- grch38 %>%
-  filter(ensgene %in% resultados_mod$row_names) %>%
+resultados_id_PP <- grch38 %>%
+  filter(ensgene %in% results_PP_mod$row_names) %>%
+  # Select only the 'entrez' column
+  select(symbol)
+resultados_id_TRU <- grch38 %>%
+  filter(ensgene %in% results_Tru_mod$row_names) %>%
   # Select only the 'entrez' column
   select(symbol)
 
-
-resultados_ensembl_id <- grch38 %>%
-  filter(ensgene %in% resultados_mod$row_names) %>%
-  # Select only the 'entrez' column
+resultados_ensembl_id_PP <- grch38 %>%
+  filter(ensgene %in% results_PP_mod$row_names) %>%
+  # Select both 'ensgene' and 'symbol' columns
+  select(ensgene, symbol)
+resultados_ensembl_id_TRU <- grch38 %>%
+  filter(ensgene %in% results_Tru_mod$row_names) %>%
+  # Select both 'ensgene' and 'symbol' columns
   select(ensgene, symbol)
 
 # Print the filtered table
-print(resultados_id)
+print(resultados_id_PP)
+print(resultados_id_TRU)
 
-resultados_id = as.data.frame(resultados_id)
+resultados_id_PP = as.data.frame(resultados_id_PP)
+resultados_id_TRU = as.data.frame(resultados_id_TRU)
 
-resultados_ensembl_id
-
-
+resultados_ensembl_id_PP
+resultados_ensembl_id_TRU
 ```
+
 
 
 ```{r}
 # Substituir os nomes das colunas "row_names" do dataframe "resultados_mod" pelos valores correspondentes da coluna "symbol" do dataframe "resultados_ensembl_id"
-resultados_mod$row_names <- resultados_ensembl_id$symbol[match(gsub("\\..*", "", resultados_mod$row_names), resultados_ensembl_id$ensgene)]
+results_PP_mod$row_names <- resultados_ensembl_id_PP$symbol[match(gsub("\\..*", "", results_PP_mod$row_names), resultados_ensembl_id_PP$ensgene)]
+
+results_Tru_mod$row_names <- resultados_ensembl_id_TRU$symbol[match(gsub("\\..*", "", results_Tru_mod$row_names), resultados_ensembl_id_TRU$ensgene)]
 
 # Resultado final
-print(resultados_mod)
+print(results_PP_mod)
+print(results_Tru_mod)
 ```
-
 
 ```{r}
 # Remover os nomes das linhas do dataframe
-rownames(resultados_mod) <- NULL
+rownames(results_PP_mod) <- NULL
+rownames(results_Tru_mod) <- NULL
 
 # Resultado final
-print(resultados_mod)
+print(results_PP_mod)
+print(results_Tru_mod)
 
 ```
-
 
 ## Ranks
 
+Depois procedemos a uma série de passos para preparar os valores dos "ranks" para serem usados na análise de enriquecimento. Os valores dos ranks para cada subtipo ficaram armazenados nas variáveis ranks_PP e ranks_Tru. Construímos também vários gráficos para analisar de uma forma global os valores dos ranks de cada gene.
 
 ```{r}
+# ordenar os resultados por ordem decrescente dos valores da coluna "logFC"
+results_PP.ord <- results_PP_mod[ order(-results_PP[,"logFC"]), ]
+results_TRU.ord <- results_Tru_mod[ order(-results_TRU[,"logFC"]), ]
 
-results.ord <- resultados_mod[ order(-results[,"logFC"]), ]
+# somar um pseudo valor a resultados com valores de "logFC" iguais para permitir um desempate entre "logFC duplicados" e não surgirem problemas ao correr a função fgsea.
+epsilon_PP <- runif(sum(duplicated(results_PP.ord$logFC)), min = 0, max = .001)
+results_PP.ord$logFC[duplicated(results_PP.ord$logFC)] <- results_PP.ord$logFC[duplicated(results_PP.ord$logFC)] + epsilon_PP
 
-epsilon <- runif(sum(duplicated(results.ord$logFC)), min = 0, max = .001)
-results.ord$logFC[duplicated(results.ord$logFC)] <- results.ord$logFC[duplicated(results.ord$logFC)] + epsilon
+epsilon_TRU <- runif(sum(duplicated(results_TRU.ord$logFC)), min = 0, max = .001)
+results_TRU.ord$logFC[duplicated(results_TRU.ord$logFC)] <- results_TRU.ord$logFC[duplicated(results_TRU.ord$logFC)] + epsilon_TRU
 
-ranks <- results.ord$logFC
-names(ranks) <- results.ord$row_names
+# criar uma variável com todos os genes do dataset e os respetivos valores de "logFC"
+ranks_PP <- results_PP.ord$logFC
+ranks_TRU <- results_TRU.ord$logFC
 
-head(ranks)
+names(ranks_PP) <- results_PP.ord$row_names
+names(ranks_TRU) <- results_TRU.ord$row_names
+
+head(ranks_PP)
+head(ranks_TRU)
 
 #ranks <- sort(ranks, decreasing = TRUE) # sort genes by ranking
-plot(ranks)
+plot(ranks_PP)
+plot(ranks_TRU)
 
-barplot(ranks)
+barplot(ranks_PP)
+barplot(ranks_TRU)
 
 ```
 
+Analisando estes gráficos verificamos que tanto entre os subtipos PP-PI como entre os subtipos TRU-PI existe um número relativamente elevado de genes com expressão diferencial potencialmente significativa, tanto valores "upregulated" (positivos) como "downregulated" (negativos). No entanto a grande maioria dos genes têm valores de rank próximos de 0, indicando pouca ou nenhuma expressão diferencial, o que seria expectável, pois entre dois subtipos da mesma doença grande parte dos genes terão uma expressão semelhante. Estes valores dos ranks foram obtidos a partir da variável "logFC", logo na realidade o que estamos a observar são os diferentes valores de "logFC" para todos os genes do dataset, ou seja, a razão entre as expressões dos genes nas condições PI - PP e TRU - PP, respetivamente. Isto permite-nos concluir que o nosso dataset parece ter vários genes cuja expressão diferencial é significativa. Contudo para verificar efetivamente se essa expressão é significativa iremos realizar uma análise mais profunda.
+
+Posteriormente, carregamos os ficheiros .gmt contento os gene sets usados para a análise de enriquecimento, sendo que optamos por escolher os "hallmark gene sets" humanos, por estarem inerentemente ligados ao cancro.
 
 ```{r}
+vector_PP = unlist(resultados_id_PP)
+vector_TRU = unlist(resultados_id_TRU)
 
-vector = unlist(resultados_id)
+# Carregar ficheiro gmt
 
-#Carregar ficheiro gmt
-
-bg_genes = prepare_gmt("C:\\Users\\olive\\Desktop\\Extracao\\c2.cp.v2023.2.Hs.symbols.gmt", vector, savefile = FALSE)
+#bg_genes = prepare_gmt("C:\\Users\\olive\\Desktop\\Extracao\\c2.cp.v2023.2.Hs.symbols.gmt", vector, savefile = FALSE)
+bg_genes_PP = prepare_gmt("~/h.all.v2023.2.Hs.symbols.gmt", vector_PP, savefile = FALSE)
+bg_genes_TRU = prepare_gmt("~/h.all.v2023.2.Hs.symbols.gmt", vector_TRU, savefile = FALSE)
 ```
 
+Procedemos a algumas correções aos valores dos genes com pvalues demasiado baixos para evitar problemas com a função fgsea.
 
 ```{r}
 # Some genes have such low p values that the signed pval is +- inf, we need to change it to the maximum * constant to avoid problems with fgsea
-max_ranking <- max(ranks[is.finite(ranks)])
-min_ranking <- min(ranks[is.finite(ranks)])
-rankings <- replace(ranks, ranks > max_ranking, max_ranking * 10)
-rankings <- replace(ranks, ranks < min_ranking, min_ranking * 10)
-rankings <- sort(ranks, decreasing = TRUE) # sort genes by ranking
+
+max_ranking_PP <- max(ranks_PP[is.finite(ranks_PP)])
+min_ranking_PP <- min(ranks_PP[is.finite(ranks_PP)])
+rankings_PP <- replace(ranks_PP, ranks_PP > max_ranking_PP, max_ranking_PP * 10)
+rankings_PP <- replace(ranks_PP, ranks_PP < min_ranking_PP, min_ranking_PP * 10)
+rankings_PP <- sort(ranks_PP, decreasing = TRUE) # sort genes by ranking
+
+max_ranking_TRU <- max(ranks_TRU[is.finite(ranks_TRU)])
+min_ranking_TRU <- min(ranks_TRU[is.finite(ranks_TRU)])
+rankings_TRU <- replace(ranks_TRU, ranks_TRU > max_ranking_TRU, max_ranking_TRU * 10)
+rankings_TRU <- replace(ranks_TRU, ranks_TRU < min_ranking_TRU, min_ranking_TRU * 10)
+rankings_TRU <- sort(ranks_TRU, decreasing = TRUE) # sort genes by ranking
 ```
 
+Construímos gráficos para avaliar os "ranks" dos primeiros 50 genes de cada suptipo, no entanto, mudando a gama de genes incluída no código podemos ver outros conjuntos de genes.
 
 ```{r}
-fgseaRes <- fgsea(pathways = bg_genes, 
-                  stats = rankings,
-                  scoreType = 'std',
-                  minSize=10, 
-                  maxSize = 1000)
-class(fgseaRes)
-dim(fgseaRes)
-head(fgseaRes[order(padj), ])
+# rankings of first 50 genes for the "exprprox.-inflam" coefficient
+ggplot(data.frame(gene_symbol = names(ranks_PP)[1:50], ranks = ranks_PP[1:50]), aes(gene_symbol, ranks)) + 
+	geom_point() +
+	theme_classic() + 
+	theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ```
-
-
 ```{r}
-ggplot(data.frame(gene_symbol = names(ranks)[1:50], ranks = ranks[1:50]), aes(gene_symbol, ranks)) + 
+# rankings of first 50 genes for the "exprTRU" coefficient
+ggplot(data.frame(gene_symbol = names(ranks_TRU)[1:50], ranks = ranks_TRU[1:50]), aes(gene_symbol, ranks)) + 
 	geom_point() +
 	theme_classic() + 
 	theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ```
 
+## Correr o fgsea
+
+De seguida realizamos a análise de enriquecimento propriamente dita, correndo a função fgsea, terminando esta parte com a construção de um gráfico com os pathways com valores significativos, filtrando os pathways com pvalues ajustados (padj) < 0.05. O gráfico também contém os valores dos Normalized Enrichment Scores (NES) e dos pvalues não ajustados (pval) para cada pathway.
+
+```{r}
+# Run fgsea
+fgseaRes_PP <- fgsea(pathways = bg_genes_PP, 
+                  stats = rankings_PP,
+                  scoreType = 'std',
+                  minSize=15, 
+                  maxSize = 500)
+class(fgseaRes_PP)
+dim(fgseaRes_PP)
+head(fgseaRes_PP[order(padj), ])
+sum(fgseaRes_PP[, padj < 0.05]) # number of significant pathways
+
+# plot top pathways for the "exprprox.-inflam" coefficient
+topPathwaysUp_PP <- fgseaRes_PP[ES > 0][head(order(padj), n = 25), pathway]
+topPathwaysDown_PP <- fgseaRes_PP[ES < 0][head(order(padj), n = 5), pathway]
+topPathways_PP <- c(topPathwaysUp_PP, rev(topPathwaysDown_PP))
+
+plotGseaTable(bg_genes_PP[topPathways_PP], stats = rankings_PP, fgseaRes = fgseaRes_PP, gseaParam = 0.5)
+```
+
+Analisando o gráfico para o coeficiente "exprprox.-prolif" verificamos que foram filtrados 10 pathways, sendo portanto os únicos com expressão diferencial significativa.
+Desses 10, os últimos 5 pathways apresentam p-values bastante menores, indicando uma maior expressão diferencial. Além disso, todos estes 5 apresentam valores de NES negativos, o que significa que estão downregulated relativamente à condição "exprprox.-inflam". Os primeiros 5 estão upregulated em relação à mesma condição. 
+Também é possível reparar que um dos pathways downregulated é o pathway da resposta inflamatória, o que seria de esperar visto que está a ser comparado o subtipo Proximal Proliferative (PP) com o Proximal Inflamatory (PI), logo seria de esperar que o PI tivesse uma expressão muito superior dos genes deste pathway.
+
+```{r}
+# Run fgsea
+fgseaRes_TRU <- fgsea(pathways = bg_genes_TRU, 
+                  stats = rankings_TRU,
+                  scoreType = 'std',
+                  minSize=15, 
+                  maxSize = 500)
+class(fgseaRes_TRU)
+dim(fgseaRes_TRU)
+head(fgseaRes_TRU[order(padj), ])
+sum(fgseaRes_TRU[, padj < 0.05]) # number of significant pathways
+
+# plot top pathways for the "exprTRU" coefficient
+topPathwaysUp_TRU <- fgseaRes_TRU[ES > 0][head(order(padj), n = 25), pathway]
+topPathwaysDown_TRU <- fgseaRes_TRU[ES < 0][head(order(padj), n = 5), pathway]
+topPathways_TRU <- c(topPathwaysUp_TRU, rev(topPathwaysDown_TRU))
+
+plotGseaTable(bg_genes_TRU[topPathways_TRU], stats = rankings_TRU, fgseaRes = fgseaRes_TRU, gseaParam = 0.5)
+```
+
+Analisando o gráfico para o coeficiente "exprTru" verificamos que este contém mais pathways filtrados (significativos), 19 para ser mais preciso. Novamente apenas os 5 últimos têm p-values muito mais pequenos e valores de NES negativos, indicando que estão downregulated também em relação ao coeficiente "exprprox.-inflam", no entanto, apenas os 3 últimos se mantêm quando comparados com o gráfico anterior.
+Novamente verificamos da mesma forma a questão do pathway da resposta inflamatória.
+
+Finalmente, construímos um último gráfico para cada coeficiente, onde se visualiza o enrichment score (ES) em função dos ranks para o pathway com expressão diferencial mais significativa, permitindo analisar quais os ranks mais diferencialmente expressos para este pathway. 
+Além disso, os gráficos poderiam ser adaptados para visualizar o mesmo, mas para outros pathways com expressão diferencial significativa.
+
+```{r}
+# plot the most significantly enriched pathway for the "exprprox.-inflam" coefficient
+plotEnrichment(bg_genes_PP[[head(fgseaRes_PP[order(padj), ], 1)$pathway]],
+               rankings_PP) + 
+  labs(title = head(fgseaRes_PP[order(padj), ], 1)$pathway)
+```
+
+```{r}
+# plot the most significantly enriched pathway for the "exprTRU" coefficient
+plotEnrichment(bg_genes_TRU[[head(fgseaRes_TRU[order(padj), ], 1)$pathway]],
+               rankings_TRU) + 
+  labs(title = head(fgseaRes_TRU[order(padj), ], 1)$pathway)
+```
 
 
 
