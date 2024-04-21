@@ -862,7 +862,7 @@ points(results_TRU[detags,"logFC"],-log10(results_TRU[detags,"FDR"]),pch=16,col=
 
 A análise de enriquecimento é realizada sobre o conjunto de genes alvo, identificados através da análise de expressão diferencial. O conjunto de genes identificados é comparado com outros conjuntos de genes, onde cada um destes contém genes biologicamente coerentes.
 
-Assim, foram realizadas duas análises de enriquecimento, uma para o conjunto de genes alvo do coeficiente "exprprox.-inflam" e outra para o conjunto de genes alvo do coeficiente "exprTRU", onde seguimos este pipeline: https://biostatsquid.com/fgsea-tutorial-gsea/.
+Assim, foram realizadas duas análises de enriquecimento, uma para o conjunto de genes alvo do coeficiente "exprprox.-inflam" e outra para o conjunto de genes alvo do coeficiente "exprTRU", onde seguimos este pipeline: <https://biostatsquid.com/fgsea-tutorial-gsea/>.
 
 Para ser possível realizar a análise recorremos às seguintes funções retiradas e adaptadas da mesma fonte.
 
@@ -1064,6 +1064,7 @@ ggplot(data.frame(gene_symbol = names(ranks_PP)[1:50], ranks = ranks_PP[1:50]), 
 	theme_classic() + 
 	theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ```
+
 ```{r}
 # rankings of first 50 genes for the "exprTRU" coefficient
 ggplot(data.frame(gene_symbol = names(ranks_TRU)[1:50], ranks = ranks_TRU[1:50]), aes(gene_symbol, ranks)) + 
@@ -1074,7 +1075,7 @@ ggplot(data.frame(gene_symbol = names(ranks_TRU)[1:50], ranks = ranks_TRU[1:50])
 
 ## Correr o fgsea
 
-De seguida realizamos a análise de enriquecimento propriamente dita, correndo a função fgsea, terminando esta parte com a construção de um gráfico com os pathways com valores significativos, filtrando os pathways com pvalues ajustados (padj) < 0.05. O gráfico também contém os valores dos Normalized Enrichment Scores (NES) e dos pvalues não ajustados (pval) para cada pathway.
+De seguida realizamos a análise de enriquecimento propriamente dita, correndo a função fgsea, terminando esta parte com a construção de um gráfico com os pathways com valores significativos, filtrando os pathways com pvalues ajustados (padj) \< 0.05. O gráfico também contém os valores dos Normalized Enrichment Scores (NES) e dos pvalues não ajustados (pval) para cada pathway.
 
 ```{r}
 # Run fgsea
@@ -1098,9 +1099,7 @@ topPathways_PP <- c(topPathwaysUp_PP, rev(topPathwaysDown_PP))
 plotGseaTable(bg_genes_PP[topPathways_PP], stats = rankings_PP, fgseaRes = fgseaRes_PP, gseaParam = 0.5)
 ```
 
-Analisando o gráfico para o coeficiente "exprprox.-prolif" verificamos que foram filtrados 10 pathways, sendo portanto os únicos com expressão diferencial significativa.
-Desses 10, os últimos 5 pathways apresentam p-values bastante menores, indicando uma maior expressão diferencial. Além disso, todos estes 5 apresentam valores de NES negativos, o que significa que estão downregulated relativamente à condição "exprprox.-inflam". Os primeiros 5 estão upregulated em relação à mesma condição. 
-Também é possível reparar que um dos pathways downregulated é o pathway da resposta inflamatória, o que seria de esperar visto que está a ser comparado o subtipo Proximal Proliferative (PP) com o Proximal Inflamatory (PI), logo seria de esperar que o PI tivesse uma expressão muito superior dos genes deste pathway.
+Analisando o gráfico para o coeficiente "exprprox.-prolif" verificamos que foram filtrados 10 pathways, sendo portanto os únicos com expressão diferencial significativa. Desses 10, os últimos 5 pathways apresentam p-values bastante menores, indicando uma maior expressão diferencial. Além disso, todos estes 5 apresentam valores de NES negativos, o que significa que estão downregulated relativamente à condição "exprprox.-inflam". Os primeiros 5 estão upregulated em relação à mesma condição. Também é possível reparar que um dos pathways downregulated é o pathway da resposta inflamatória, o que seria de esperar visto que está a ser comparado o subtipo Proximal Proliferative (PP) com o Proximal Inflamatory (PI), logo seria de esperar que o PI tivesse uma expressão muito superior dos genes deste pathway.
 
 ```{r}
 # Run fgsea
@@ -1124,11 +1123,9 @@ topPathways_TRU <- c(topPathwaysUp_TRU, rev(topPathwaysDown_TRU))
 plotGseaTable(bg_genes_TRU[topPathways_TRU], stats = rankings_TRU, fgseaRes = fgseaRes_TRU, gseaParam = 0.5)
 ```
 
-Analisando o gráfico para o coeficiente "exprTru" verificamos que este contém mais pathways filtrados (significativos), 19 para ser mais preciso. Novamente apenas os 5 últimos têm p-values muito mais pequenos e valores de NES negativos, indicando que estão downregulated também em relação ao coeficiente "exprprox.-inflam", no entanto, apenas os 3 últimos se mantêm quando comparados com o gráfico anterior.
-Novamente verificamos da mesma forma a questão do pathway da resposta inflamatória.
+Analisando o gráfico para o coeficiente "exprTru" verificamos que este contém mais pathways filtrados (significativos), 19 para ser mais preciso. Novamente apenas os 5 últimos têm p-values muito mais pequenos e valores de NES negativos, indicando que estão downregulated também em relação ao coeficiente "exprprox.-inflam", no entanto, apenas os 3 últimos se mantêm quando comparados com o gráfico anterior. Novamente verificamos da mesma forma a questão do pathway da resposta inflamatória.
 
-Finalmente, construímos um último gráfico para cada coeficiente, onde se visualiza o enrichment score (ES) em função dos ranks para o pathway com expressão diferencial mais significativa, permitindo analisar quais os ranks mais diferencialmente expressos para este pathway. 
-Além disso, os gráficos poderiam ser adaptados para visualizar o mesmo, mas para outros pathways com expressão diferencial significativa.
+Finalmente, construímos um último gráfico para cada coeficiente, onde se visualiza o enrichment score (ES) em função dos ranks para o pathway com expressão diferencial mais significativa, permitindo analisar quais os ranks mais diferencialmente expressos para este pathway. Além disso, os gráficos poderiam ser adaptados para visualizar o mesmo, mas para outros pathways com expressão diferencial significativa.
 
 ```{r}
 # plot the most significantly enriched pathway for the "exprprox.-inflam" coefficient
