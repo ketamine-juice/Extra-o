@@ -1033,8 +1033,14 @@ vector_TRU = unlist(resultados_id_TRU)
 # Carregar ficheiro gmt
 
 # Nota: Necessário fornecer o caminho com a localização do ficheiro
-bg_genes_PP = prepare_gmt("~/h.all.v2023.2.Hs.symbols.gmt", vector_PP, savefile = FALSE)
-bg_genes_TRU = prepare_gmt("~/h.all.v2023.2.Hs.symbols.gmt", vector_TRU, savefile = FALSE)
+
+#bg_genes_PP = prepare_gmt("~/h.all.v2023.2.Hs.symbols.gmt", vector_PP, savefile = #FALSE)
+bg_genes_PP = prepare_gmt("C:/Users/olive/Desktop/Extracao/report/fase_I/h.all.v2023.2.Hs.symbols.gmt", vector_PP, savefile = FALSE)
+
+
+#bg_genes_TRU = prepare_gmt("~/h.all.v2023.2.Hs.symbols.gmt", vector_TRU, savefile #= FALSE)
+
+bg_genes_TRU = prepare_gmt("C:/Users/olive/Desktop/Extracao/report/fase_I/h.all.v2023.2.Hs.symbols.gmt", vector_TRU, savefile = FALSE)
 ```
 
 Procedemos a algumas correções aos valores dos genes com pvalues demasiado baixos para evitar problemas com a função fgsea.
