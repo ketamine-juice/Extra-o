@@ -1147,6 +1147,24 @@ plotEnrichment(bg_genes_TRU[[head(fgseaRes_TRU[order(padj), ], 1)$pathway]],
   labs(title = head(fgseaRes_TRU[order(padj), ], 1)$pathway)
 ```
 
+# Redução de dimensionalidade
+
+A técnica de redução de dimensionalidade, através da "Principal Component Analysis" (PCA), visa simplificar conjuntos de dados extensos, encontrando um conjunto menor de variáveis não correlacionadas que capturam a maior parte da variabilidade. Isso é alcançado através da transformação das variáveis originais em componentes principais, que são ordenados pela sua capacidade de explicar a variabilidade dos dados. Esta técnica é valiosa quando há muitas variáveis e potencial redundância nos dados, mas é importante normalizar os dados antes da análise para garantir resultados adequados.
+
+Em primeiro lugar, foi instalado mais um package que auxiliará na visualizaçao dos resultados da PCA.
+
+```{r}
+
+install.packages("factoextra")
+
+```
+
+```{r}
+
+library(factoextra) # For PCA functions and visualizations
+
+```
+
 # Bibliografia
 
 \bibliography{referencias}
