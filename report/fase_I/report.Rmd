@@ -1155,7 +1155,7 @@ Em primeiro lugar, foi instalado mais um package que auxiliará na visualizaçao
 
 ```{r}
 
-install.packages("factoextra")
+#install.packages("factoextra")
 
 ```
 
@@ -1163,6 +1163,104 @@ install.packages("factoextra")
 
 library(factoextra) # For PCA functions and visualizations
 
+```
+
+De seguida, o conjunto de dados utilizado no PCA foi redimensionado uma vez que esta técnina é sensível à escala das variáveis. Foi feita uma padronização para que os dados tenham uma média de 0 e um desvio padrão de 1.
+
+```{r}
+data_escala = scale(seqdata_filter) 
+
+```
+
+Uma vez que a função "prcomp" espera que as colunas sejam genes e as linhas as amostras, temos de efetuar a transporta da matriz do nosso dataset.
+
+```{r}
+pca = prcomp(t(data_escala), scale = TRUE)
+```
+
+```{r}
+fviz_eig(pca)
+```
+
+StatQuest: PCA in R (youtube.com)
+
+The first PC accounts for the most variation in the original data (the gene expression across all samples) and the 2nd PC account for the second most variation.
+
+```{r}
+plot(pca$x[,1], pca$x[,2])
+```
+
+Vamos agora averiguar quanta variação é que cada PC representa.
+
+Em primeiro lugar usamos o quadrado de sdev, desvio padrão, para calcular a quantidade de variação que cada componente principal (PC) representa. Uma vez que a percentagem de cada quantidade de variação em cada PC é mais interessante que o próprio valor, vamos observar esses resultados aravés de uma gráfico de barras.
+
+```{r}
+
+pca_var = pca$sdev^2
+
+pca_var_per = round(pca_var/sum(pca_var)*100, 1)
+
+barplot(pca_var_per[1:20], main = "Scree Plot", xlab = "Componente Principal (PC)", ylab = "Variação Percentual")
+```
+
+Conseguimos perceber que os dois primeiros PCs contêm a variação de todo o dataset, sendo que o PC1 contêm quase toda a variação dos dados.
+
+De seguida, procedemos à análise com o uso do package ggplot2.
+
+```{r}
+
+#Formatação dos dados
+pca_data = data.frame(Sample=rownames(pca$x), X = pca$x[,1], Y = pca$x[,2])
+
+pca_data
+```
+
+```{r}
+
+ggplot(data = pca_data, aes (x = X, y = Y, label = Sample)) +
+  geom_text() +
+  xlab(paste("PC1 - ", pca_var_per[1], "%", sep = "")) + 
+  ylab(paste("PC2 - ", pca_var_per[2], "%", sep = "")) +
+  theme_bw() + 
+  ggtitle("Gráfico PCA")
+
+```
+
+Next, we look into the loading scores of PC1 since it accounts for about 80% of the variation in the data. Let's look at the magnitude by using the function abs(), since genes that push samples to the left side of the graph have large negative values and genes that push to the right side of the graph have postive values
+
+```{r}
+loading_scores = pca$rotation[,1]
+
+gene_scores = abs(loading_scores)
+
+gene_score_ranked = sort(gene_scores, decreasing = TRUE)
+
+top_10_genes = names(gene_score_ranked[1:10])
+
+top_10_genes
+```
+
+```{r}
+pca$rotation[top_10_genes,1]
+```
+
+They all push to the left.
+
+```{r}
+biplot(pca)
+```
+
+```{r}
+plot(pca$x[,1], pca$x[,2], pch 
+= 16, xlab = "PC1", ylab = "PC2")
+```
+
+```{r}
+pca2 = princomp(scale(data_escala))
+```
+
+```{r}
+plot(pca2)
 ```
 
 # Bibliografia
