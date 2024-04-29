@@ -1279,6 +1279,12 @@ library(randomForest)
 
 
 ```{r}
+#libs
+library(caret)
+library(RSNNS)
+library(party)
+library(randomForest)
+
 # Criação do training set
 set.seed(100)
 

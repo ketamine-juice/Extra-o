@@ -1,28 +1,33 @@
-# Inspirado nisto: https://www.sciencedirect.com/science/article/pii/S0307904X23002809
-
+#libs
 library(caret)
 library(RSNNS)
 library(party)
 library(randomForest)
 
+# Criação do training set
 set.seed(100)
 
-inTrain = createDataPartition(y = logcounts , p = 0.8, list = F)
-trainData = logcounts[inTrain]
-testData = logcounts[-inTrain]
+# Preparar as amostras e o tipo
+t_hvl = t(highly_variable_lcpm)
+t_ex = cbind(t_hvl,meta$expr)
+t_ex = as.data.frame(t_ex)
+# Garantir que está tudo OK
+all(rownames(t_hvl) == meta$sample_id)
+
+inTrain = createDataPartition(y = t_ex[,101] , p = 0.8, list = F)
+trainData = t_ex[inTrain,]
+testData = t_ex[-inTrain,]
 
 # Usando ridge reg, conventional rf e conditional inference rf, MLP
 # Baseado na seguinte lógica: https://chat.openai.com/share/adf05b1e-265c-4b62-bc2f-4cdd51f78b7f
 
 models = c(
-'ORFridge',
-'cforest',
-'rf',
-'mlp'
+  'cforest',
+  'rf',
+  'mlp'
 )
 
-luad_models = train(logcounts[,1:4],logcounts[,5], method = models)
-
-preds_luad = predict(luad_models, testData[,1:4])
-
-# agora falta testar o snippet
+luad_models = caret::train(t_ex[,1:100],t_ex[,101], method = 'rf')
+preds_luad = predict(luad_models, testData[,1:100])
+preds_luad
+confusionMatrix(preds_luad, testData[,101])
