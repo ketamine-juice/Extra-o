@@ -165,10 +165,10 @@ suppressMessages({
   library(biomaRt)
   library(GSEABase)
   library(fgsea)
-  library(clusterProfiler)
+  #library(clusterProfiler)
   library(ggplot2)
   library(dplyr)
-  library(annotables)
+  #library(annotables)
 })
 ```
 
@@ -569,7 +569,7 @@ Para facilitar a interpretação dos dados e apoiar a análise do heatmap para t
 var_genes = apply(logcounts, 1, var)
 
 # Seleção dos 10 genes com maior variabilidade
-select_var = names(sort(var_genes, decreasing=TRUE))[1:10]
+select_var = names(sort(var_genes, decreasing=TRUE))[1:100]
 select_var
 
 # Seleciona as linhas da matriz 'logcounts' com base nos índices fornecidos em 'select_var'
@@ -1262,6 +1262,70 @@ pca2 = princomp(scale(data_escala))
 ```{r}
 plot(pca2)
 ```
+
+```{r}
+#ML tests
+
+# Inspirado nisto: https://www.sciencedirect.com/science/article/pii/S0307904X23002809
+```
+
+
+```{r}
+library(caret)
+library(RSNNS)
+library(party)
+library(randomForest)
+```
+
+
+```{r}
+# Criação do training set
+set.seed(100)
+
+# Preparar as amostras e o tipo
+t_hvl = t(highly_variable_lcpm)
+t_ex = cbind(t_hvl,meta$expr)
+t_ex = as.data.frame(t_ex)
+# Garantir que está tudo OK
+all(rownames(t_hvl) == meta$sample_id)
+  
+inTrain = createDataPartition(y = t_ex[,101] , p = 0.8, list = F)
+trainData = t_ex[inTrain,]
+testData = t_ex[-inTrain,]
+
+# Usando ridge reg, conventional rf e conditional inference rf, MLP
+# Baseado na seguinte lógica: https://chat.openai.com/share/adf05b1e-265c-4b62-bc2f-4cdd51f78b7f
+
+
+
+```
+
+```{r}
+models = c(
+'cforest',
+'rf',
+'mlp'
+)
+
+luad_models = caret::train(t_ex[,1:100],t_ex[,101], method = 'rf')
+```
+
+
+```{r}
+preds_luad = predict(luad_models, testData[,1:100])
+```
+
+
+```{r}
+preds_luad
+```
+
+
+```{r}
+confusionMatrix(preds_luad, testData[,101])
+
+```
+
 
 # Bibliografia
 
