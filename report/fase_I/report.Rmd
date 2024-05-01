@@ -1271,65 +1271,522 @@ plot(pca2)
 
 
 ```{r}
-library(caret)
-library(RSNNS)
-library(party)
-library(randomForest)
+#prep vars novamente
+luad = data
+expr = na.omit(luad$paper_expression_subtype)
+#head(expr)
+
+seqdata = as.data.frame(assay(luad, 'unstranded'))
+colnames(seqdata) = luad$sample_id
+seqdata = seqdata[,expr]
+
+suppressMessages(
+  library(edgeR)
+)
+
+# Cálculo CPM
+calccpm = cpm(seqdata)
+
+# Remoção de genes com baixa expressão
+thresh = calccpm > 0.5
+keep = rowSums(thresh) >= 2
+counts_keep = seqdata[keep,]
+
+#summary(keep)
+dim(counts_keep)
+
+
+# Criação do objeto para a análise de expr. diferencial
+dgeObj = DGEList(counts_keep)
+#names(dgeObj)
+#head(dgeObj$samples)
+
+## distributions - log transform
+logcounts = cpm(dgeObj,log=TRUE)
+#head(logcounts)
+
+suppressMessages(
+  library(biomaRt)
+)
+
+# Set up the connection to Ensembl
+ensembl <- useEnsembl(biomart = "genes", dataset = "hsapiens_gene_ensembl")
+ensembl_dataset <- useDataset('hsapiens_gene_ensembl', mart = ensembl)
+
+# Remove version numbers from Ensembl gene IDs in logcounts
+ensembl_ids <- gsub("\\..*", "", rownames(logcounts))
+rownames(logcounts) <- ensembl_ids
+
+# Retrieve gene symbols for the Ensembl IDs
+gene_symbols <- getBM(attributes = c("ensembl_gene_id", "external_gene_name"),
+                      filters = "ensembl_gene_id",
+                      values = ensembl_ids,
+                      mart = ensembl)
+
+# Loop through each Ensembl gene ID in seqdata
+for (i in seq_along(ensembl_ids)) {
+  # Find the index of the Ensembl gene ID in gene_symbols
+  idx <- match(ensembl_ids[i], gene_symbols$ensembl_gene_id)
+  # If a corresponding gene symbol is found and it's not an empty string, replace the row name
+  if (!is.na(idx) && gene_symbols$external_gene_name[idx] != "") {
+    rownames(logcounts)[i] <- gene_symbols$external_gene_name[idx]
+  }
+}
+
+# Cálculo da variância de cada gene nos dados de contagem logaritmizada
+var_genes = apply(logcounts, 1, var)
+
+
+```
+
+```{r}
+suppressMessages(
+  library(gplots),
+  library(RColorBrewer)
+)
+
+# Seleção dos 10 genes com maior variabilidade
+select_var = names(sort(var_genes, decreasing=TRUE))
+#select_var
+
+# Seleciona as linhas da matriz 'logcounts' com base nos índices fornecidos em 'select_var'
+highly_variable_lcpm = logcounts[select_var,]
+#head(highly_variable_lcpm)
+dim(highly_variable_lcpm)
+
+```
+
+```{r}
+
+# Criação do mapa
+mypalette = RColorBrewer::brewer.pal(9,"RdYlBu")
+morecols = colorRampPalette(mypalette)
+
+labels = levels(expr)
+col.cell2 = c("purple","orange", "green")[expr][1:50]
+heatmap.2(highly_variable_lcpm[,1:50],
+          col=rev(morecols(50)),
+          trace="column",
+          main="Top 10 genes mais variáveis entre 50 amostras aleatórias",
+          ColSideColors=col.cell2,scale="row",
+          margins = c(5, 12))
+legend("left", legend=labels, fill=c("purple","orange","green")) # corrigir etiqueta
 ```
 
 
-```{r}
-#libs
-library(caret)
-library(RSNNS)
-library(party)
-library(randomForest)
 
+#Preparação das matrizes para treino
+```{r}
+# Preparar as amostras e o tipo
+expr_data = t(highly_variable_lcpm)
+phenotype = expr
+expr_profiles = cbind(expr_data,phenotype)
+expr_profiles = as.data.frame(expr_profiles)
+labels = c('prox.-inflam','prox.-prolif','TRU')
+expr_profiles$phenotype = factor(expr_profiles$phenotype, levels = 1:3 , labels = labels)
+dim(expr_profiles)
+```
+
+
+
+```{r}
+library(caret)
+#library(RSNNS)
+library(party)
+library(plyr)
+library(dplyr)
+library(recipes)
+```
+
+Vamos testar com o top 100, 500, 1000, 10000 e total
+
+A lógica será ver se há diferenças significativas nos modelos e se é introduzida variabilidade suficiente nos perfis para ter maior granulometria.
+
+Top 100, 500 e 1000, 1000 e total em random forest tem sempre uma accuracy de 100% o que é suspeito pois não é plausível considerar um modelo que acerte 100% das vezes, mesmo com cross validation e bootstraping. Isto pode estar relacionado com o facto de o dataset não ser grande o suficiente, pelo que seria importante utilizar mais amostras ou um data set mais extenso.
+
+Para o MLP vemos diferenças, tendo o modelo uma accuracy de 100% para top 100, 500 e 1000 mas começando a reduzir a accuracy com maior número de genes nos perfis. Isto já é um comportamento mais ajustado à realidade, sobretudo sendo que o maior elemento de confusão está entre os tipos TRU e prox.-prolif que são os que têm o perfil de expressão mais semelhante em alguns genes como é possível ver nos heatmaps. O modelo com melhores resultados foi o testado em 10000
+
+É aqui que testamos o model mix em que cruzamos random forests e mlp para obtenção de resultados mais fiáveis.
+
+
+```{r}
 # Criação do training set
 set.seed(100)
-
-# Preparar as amostras e o tipo
-t_hvl = t(highly_variable_lcpm)
-t_ex = cbind(t_hvl,meta$expr)
-t_ex = as.data.frame(t_ex)
-# Garantir que está tudo OK
-all(rownames(t_hvl) == meta$sample_id)
   
-inTrain = createDataPartition(y = t_ex[,101] , p = 0.8, list = F)
-trainData = t_ex[inTrain,]
-testData = t_ex[-inTrain,]
+inTrain = createDataPartition(y = expr_profiles$phenotype , p = 0.8, list = F)
+trainData = expr_profiles[inTrain,]
+testData = expr_profiles[-inTrain,]
 
 # Usando ridge reg, conventional rf e conditional inference rf, MLP
 # Baseado na seguinte lógica: https://chat.openai.com/share/adf05b1e-265c-4b62-bc2f-4cdd51f78b7f
 
+# Definição de parãmetros de treino
 
+trCtrl = trainControl(
+  method = 'cv',
+  number = 5
 
-```
-
-```{r}
-models = c(
-'cforest',
-'rf',
-'mlp'
 )
 
-luad_models = caret::train(t_ex[,1:100],t_ex[,101], method = 'rf')
+dim(trainData)
+
+```
+# Treino com top 100
+
+## Random Forests
+
+```{r}
+start = Sys.time()
+
+interv = 1:100
+
+luad.rf.100 = caret::train(
+  trainData[,interv],
+  trainData$phenotype, 
+  method = c('rf'), 
+  trControl = trainControl(method = 'boot', number = 5), 
+  tuneLength = 5, 
+  preProc = c("center", "scale")
+  )
+
+end = Sys.time()
+
+print(end - start)
+```
+```{r}
+#luad.rf.100$finalModel
+#luad.rf.100$results
+pred.rf.100 = predict(luad.rf.100,testData[,interv])
+cm.rf.100 = caret::confusionMatrix(pred.rf.100, testData$phenotype)
+cm.rf.100
+```
+##MLP
+
+```{r}
+start = Sys.time()
+luad.mlp.100 = caret::train(
+  trainData[,interv],
+  trainData$phenotype, 
+  method = 'mlp', 
+  trControl = trainControl(method='cv',number='5')
+)
+end = Sys.time()
+print(end - start)
+
+```
+```{r}
+#luad.mlp.100$finalModel
+#luad.mlp.100$results
+pred.mlp.100 = predict(luad.mlp.100,testData[,interv])
+cm.mlp.100 = caret::confusionMatrix(pred.mlp.100, testData$phenotype)
+cm.mlp.100
+cm.mlp.100$overall
+cm.mlp.100$byClass
 ```
 
 
+# Treino com top 500
+
+## Random Forests
+
 ```{r}
-preds_luad = predict(luad_models, testData[,1:100])
+start = Sys.time()
+
+interv = 1:500
+
+luad.rf.500 = caret::train(
+  trainData[,interv],
+  trainData$phenotype, 
+  method = c('rf'), 
+  trControl = trainControl(method = 'boot', number = 5), 
+  tuneLength = 5, 
+  preProc = c("center", "scale")
+  )
+
+end = Sys.time()
+
+print(end - start)
+```
+
+```{r}
+#luad.rf.500$finalModel
+#luad.rf.500$results
+pred.rf.500 = predict(luad.rf.500,testData[,interv])
+cm.rf.500 = caret::confusionMatrix(pred.rf.500, testData$phenotype)
+cm.rf.500$overall
+cm.rf.500$byClass
+```
+##MLP
+
+```{r}
+start = Sys.time()
+luad.mlp.500 = caret::train(
+  trainData[,interv],
+  trainData$phenotype, 
+  method = 'mlp', 
+  trControl = trainControl(method='cv',number='5')
+)
+end = Sys.time()
+print(end - start)
+
+```
+
+```{r}
+#luad.mlp.500$finalModel
+#luad.mlp.500$results
+pred.mlp.500 = predict(luad.mlp.500,testData[,interv])
+cm.mlp.500 = caret::confusionMatrix(pred.mlp.500, testData$phenotype)
+cm.mlp.500
+cm.mlp.500$overall
+cm.mlp.500$byClass
+```
+
+# Treino com top 1000
+
+## Random Forests
+
+```{r}
+start = Sys.time()
+
+interv = 1:1000
+
+luad.rf.1000 = caret::train(
+  trainData[,interv],
+  trainData$phenotype, 
+  method = c('rf'), 
+  trControl = trainControl(method = 'boot', number = 5), 
+  tuneLength = 5, 
+  preProc = c("center", "scale")
+  )
+
+end = Sys.time()
+
+print(end - start)
+```
+
+```{r}
+#luad.rf.1000$finalModel
+#luad.rf.1000$results
+pred.rf.1000 = predict(luad.rf.1000,testData[,interv])
+cm.rf.1000 = caret::confusionMatrix(pred.rf.1000, testData$phenotype)
+cm.rf.1000$overall
+cm.rf.1000$byClass
+```
+##MLP
+
+```{r}
+start = Sys.time()
+luad.mlp.1000 = caret::train(
+  trainData[,interv],
+  trainData$phenotype, 
+  method = 'mlp', 
+  trControl = trainControl(method='cv',number='5')
+)
+end = Sys.time()
+print(end - start)
+
+```
+
+```{r}
+#luad.mlp.1000$finalModel
+#luad.mlp.1000$results
+pred.mlp.1000 = predict(luad.mlp.1000,testData[,interv])
+cm.mlp.1000 = caret::confusionMatrix(pred.mlp.1000, testData$phenotype)
+cm.mlp.1000
+cm.mlp.1000$overall
+cm.mlp.1000$byClass
+
+
 ```
 
 
+# Treino com top 5000
+
+## Random Forests
+
 ```{r}
-preds_luad
+start = Sys.time()
+
+interv = 1:5000
+
+luad.rf.5000 = caret::train(
+  trainData[,interv],
+  trainData$phenotype, 
+  method = c('rf'), 
+  trControl = trainControl(method = 'boot', number = 5), 
+  tuneLength = 5, 
+  preProc = c("center", "scale")
+  )
+
+end = Sys.time()
+
+print(end - start)
+```
+
+```{r}
+#luad.rf.5000$finalModel
+#luad.rf.5000$results
+pred.rf.5000 = predict(luad.rf.5000,testData[,interv])
+cm.rf.5000 = caret::confusionMatrix(pred.rf.5000, testData$phenotype)
+cm.rf.5000$overall
+cm.rf.5000$byClass
+```
+##MLP
+
+```{r}
+start = Sys.time()
+luad.mlp.5000 = caret::train(
+  trainData[,interv],
+  trainData$phenotype, 
+  method = 'mlp', 
+  trControl = trainControl(method='cv',number='5')
+)
+end = Sys.time()
+print(end - start)
+
+```
+
+```{r}
+#luad.mlp.5000$finalModel
+#luad.mlp.5000$results
+pred.mlp.5000 = predict(luad.mlp.5000,testData[,interv])
+cm.mlp.5000 = caret::confusionMatrix(pred.mlp.5000, testData$phenotype)
+cm.mlp.5000
+cm.mlp.5000$overall
+cm.mlp.5000$byClass
+```
+
+# Treino com top 10000
+
+## Random Forests
+
+```{r}
+start = Sys.time()
+
+interv = 1:10000
+
+luad.rf.10000 = caret::train(
+  trainData[,interv],
+  trainData$phenotype, 
+  method = c('rf'), 
+  trControl = trainControl(method = 'boot', number = 5), 
+  tuneLength = 5, 
+  preProc = c("center", "scale")
+  )
+
+end = Sys.time()
+
+print(end - start)
+```
+
+```{r}
+#luad.rf.10000$finalModel
+#luad.rf.10000$results
+pred.rf.10000 = predict(luad.rf.10000,testData[,interv])
+cm.rf.10000 = caret::confusionMatrix(pred.rf.10000, testData$phenotype)
+cm.rf.10000$overall
+cm.rf.10000$byClass
+```
+##MLP
+
+```{r}
+start = Sys.time()
+luad.mlp.10000 = caret::train(
+  trainData[,interv],
+  trainData$phenotype, 
+  method = 'mlp', 
+  trControl = trainControl(method='cv',number='5')
+)
+end = Sys.time()
+print(end - start)
+
+```
+
+```{r}
+#luad.mlp.10000$finalModel
+#luad.mlp.10000$results
+pred.mlp.10000 = predict(luad.mlp.10000,testData[,interv])
+cm.mlp.10000 = caret::confusionMatrix(pred.mlp.10000, testData$phenotype)
+cm.mlp.10000
+cm.mlp.10000$overall
+cm.mlp.10000$byClass
+```
+
+```{r}
+# Guardamos todos os modelos até aqui usados just in case
+# Os random forests
+saveRDS(luad.rf.100, file = 'luad.rf.100.rds')
+saveRDS(luad.rf.1000, file = 'luad.rf.1000.rds')
+saveRDS(luad.rf.10000, file = 'luad.rf.10000.rds')
+saveRDS(luad.rf.500, file = 'luad.rf.500.rds')
+saveRDS(luad.rf.5000, file = 'luad.rf.5000.rds')
+
+# Os MLPs
+saveRDS(luad.mlp.100, file = 'luad.mlp.100.rds')
+saveRDS(luad.mlp.1000, file = 'luad.mlp.1000.rds')
+saveRDS(luad.mlp.10000, file = 'luad.mlp.10000.rds')
+saveRDS(luad.mlp.500, file = 'luad.mlp.500.rds')
+saveRDS(luad.mlp.5000, file = 'luad.mlp.5000.rds')
+
 ```
 
 
-```{r}
-confusionMatrix(preds_luad, testData[,101])
 
+
+# Treino com todos
+
+## Random Forests
+
+```{r}
+start = Sys.time()
+
+interv = 1:19529
+
+luad.rf.19529 = caret::train(
+  trainData[,interv],
+  trainData$phenotype, 
+  method = c('rf'), 
+  trControl = trainControl(method = 'boot', number = 5), 
+  tuneLength = 5, 
+  preProc = c("center", "scale")
+  )
+
+end = Sys.time()
+
+print(end - start)
+```
+
+```{r}
+#luad.rf.19529$finalModel
+#luad.rf.19529$results
+pred.rf.19529 = predict(luad.rf.19529,testData[,interv])
+cm.rf.19529 = caret::confusionMatrix(pred.rf.19529, testData$phenotype)
+cm.rf.19529$overall
+cm.rf.19529$byClass
+```
+##MLP
+
+```{r}
+start = Sys.time()
+luad.mlp.19529 = caret::train(
+  trainData[,interv],
+  trainData$phenotype, 
+  method = 'mlp', 
+  trControl = trainControl(method='cv',number='5')
+)
+end = Sys.time()
+print(end - start)
+
+```
+
+```{r}
+#luad.mlp.19529$finalModel
+#luad.mlp.19529$results
+pred.mlp.19529 = predict(luad.mlp.19529,testData[,interv])
+cm.mlp.19529 = caret::confusionMatrix(pred.mlp.19529, testData$phenotype)
+cm.mlp.19529
+cm.mlp.19529$overall
+cm.mlp.19529$byClass
 ```
 
 
