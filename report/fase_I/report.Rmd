@@ -1263,14 +1263,30 @@ pca2 = princomp(scale(data_escala))
 plot(pca2)
 ```
 
+# Previsão de fenótipo utilizando aprendizagem automática
+
+Nesta secção pretende-se explorar várias abordagens de aprendizagem automática para prever o fenótipo do carcinoma com base no perfil de expressão genética. Iremos testar um conjunto alargado de modelos de modo a aferir qual o que será mais adequado. Para este processo iremos seguir uma pipeline de aprendizagem automática simples, com recurso à biblioteca `caret`, que simplifica o procedimento de treino uma vez que faz o *wrapping* de várias funções e facilita a paremetrização.
+
+Irão ser testados os seguintes modelos:
+
+-   **Random Forests**: O modelo de aprendizagem automática com recurso a [random forests](https://www.sciencedirect.com/topics/engineering/random-forest) é um modelo de classificação que implementa um conjunto de árvores de decisão. O modelo sustenta-se na análise e classificação de dados com base em padrões. Este parece ser um modelo adequado para a identificação de fenótipos de cancro com base em perfis de expressão genética e pode ser um potencial modelo adequado para os nossos dados atendendo aos padrões claramente visíveis na representação dos dados por *heatmap*. Este modelo já foi inclusive corretamente implementado na previsão de fenótipos de cancro por Wang et al.
+-   **Multi-Layer Perceptron (MLP)**: Um [MLP](https://www.sciencedirect.com/topics/veterinary-science-and-veterinary-medicine/multilayer-perceptron) é um tipo de [rede neuronal](https://www.sciencedirect.com/topics/social-sciences/neural-network) communmente utilizado na classificação de dados com base em padrões. Com base no seu funcionamento e lógica de utilização, poderá ter um desempenho interessante e adequado para o tipo de dados que estamos a analisar.
+
 ```{r}
 #ML tests
 
 # Inspirado nisto: https://www.sciencedirect.com/science/article/pii/S0307904X23002809
 ```
 
+## Preparação de dados para análise
+
+Para esta análise iremos partir dos perfis de variabilidade de expressão previamente definidos ordenados (`highly_variable_lcpm`). Contudo, de modo a podermos testar os modelos de forma mais exaustiva não nos iremos cingir apenas aos 100 genes com maior variablidade de expressão mas sim em diferentes conjuntos, nomeadamente os "tops" 100, 500, 5000, 1000 e 10000 .
+
+**NOTA**: De modo a facilitar a execução das células de código deste notebook iremos utilizar modelos pré-treinados com os parâmetros em comentário. Os modelos foram treinados por nós e gravados em formato ".rds". Em todo o caso apresentamos toda a pipeline seguida.
 
 ```{r}
+# Esta parte pode ser excluída no relatório final
+
 #prep vars novamente
 luad = data
 expr = na.omit(luad$paper_expression_subtype)
@@ -1283,6 +1299,7 @@ seqdata = seqdata[,expr]
 suppressMessages(
   library(edgeR)
 )
+
 
 # Cálculo CPM
 calccpm = cpm(seqdata)
@@ -1333,34 +1350,61 @@ for (i in seq_along(ensembl_ids)) {
   }
 }
 
-# Cálculo da variância de cada gene nos dados de contagem logaritmizada
-var_genes = apply(logcounts, 1, var)
-
 
 ```
 
+### Criação de novas vistas
+
+De modo a facilitar a visualização e ter uma visão de um possível comportamento do modelo, criamos vários **heatmaps** para cada uma das amostras.
+
 ```{r}
+# Remover na versão final o carregamento de libs
 suppressMessages(
   library(gplots),
   library(RColorBrewer)
 )
 
+# Cálculo da variância de cada gene nos dados de contagem logaritmizada
+var_genes = apply(logcounts, 1, var)
+var_genes.100 = apply(logcounts, 1, var)
+var_genes.500 = apply(logcounts, 1, var)
+var_genes.1000 = apply(logcounts, 1, var)
+var_genes.5000 = apply(logcounts, 1, var)
+var_genes.10000 = apply(logcounts, 1, var)
+
 # Seleção dos 10 genes com maior variabilidade
 select_var = names(sort(var_genes, decreasing=TRUE))
+select_var.100 = names(sort(var_genes, decreasing=TRUE))
+select_var.500 = names(sort(var_genes, decreasing=TRUE))
+select_var.1000 = names(sort(var_genes, decreasing=TRUE))
+select_var.5000 = names(sort(var_genes, decreasing=TRUE))
+select_var.10000 = names(sort(var_genes, decreasing=TRUE))
+
+
+
 #select_var
 
 # Seleciona as linhas da matriz 'logcounts' com base nos índices fornecidos em 'select_var'
 highly_variable_lcpm = logcounts[select_var,]
+highly_variable_lcpm.100 = logcounts[select_var.100,]
+highly_variable_lcpm.500 = logcounts[select_var.500,]
+highly_variable_lcpm.1000 = logcounts[select_var.5000,]
+highly_variable_lcpm.5000 = logcounts[select_var.1000,]
+highly_variable_lcpm.10000 = logcounts[select_var.10000,]
+
 #head(highly_variable_lcpm)
 dim(highly_variable_lcpm)
 
 ```
+Conforme podemos visualizar nos heatmaps, há uma clara distinção para os diferentes perfis de expressão e respetivos fenótipos, pelo que é plausível considerar que os modelos serão bem sucedidos nas suas previsões de fenótipo. Contudo, importa salientar que os dados analisados são relativamente poucos (248 linhas apenas) o que, mesmo utilizando técnicas como validação cruzada e / ou *bootstrapping*, poderá levar a resultados enviesados e pouco satisfatórios.
 
 ```{r}
+# Visualização de mapas para diferentes perfis para ter uma percepção de possíveis resultados
 
-# Criação do mapa
 mypalette = RColorBrewer::brewer.pal(9,"RdYlBu")
 morecols = colorRampPalette(mypalette)
+
+# Todos
 
 labels = levels(expr)
 col.cell2 = c("purple","orange", "green")[expr][1:50]
@@ -1371,11 +1415,73 @@ heatmap.2(highly_variable_lcpm[,1:50],
           ColSideColors=col.cell2,scale="row",
           margins = c(5, 12))
 legend("left", legend=labels, fill=c("purple","orange","green")) # corrigir etiqueta
+
+# 100
+
+labels = levels(expr)
+col.cell2 = c("purple","orange", "green")[expr][1:50]
+heatmap.2(highly_variable_lcpm.100[,1:50],
+          col=rev(morecols(50)),
+          trace="column",
+          main="Top 10 genes mais variáveis entre 50 amostras aleatórias",
+          ColSideColors=col.cell2,scale="row",
+          margins = c(5, 12))
+legend("left", legend=labels, fill=c("purple","orange","green")) # corrigir etiqueta
+
+# 500
+
+labels = levels(expr)
+col.cell2 = c("purple","orange", "green")[expr][1:50]
+heatmap.2(highly_variable_lcpm.500[,1:50],
+          col=rev(morecols(50)),
+          trace="column",
+          main="Top 10 genes mais variáveis entre 50 amostras aleatórias",
+          ColSideColors=col.cell2,scale="row",
+          margins = c(5, 12))
+legend("left", legend=labels, fill=c("purple","orange","green")) # corrigir etiqueta
+
+# 1000
+
+labels = levels(expr)
+col.cell2 = c("purple","orange", "green")[expr][1:50]
+heatmap.2(highly_variable_lcpm.1000[,1:50],
+          col=rev(morecols(50)),
+          trace="column",
+          main="Top 10 genes mais variáveis entre 50 amostras aleatórias",
+          ColSideColors=col.cell2,scale="row",
+          margins = c(5, 12))
+legend("left", legend=labels, fill=c("purple","orange","green")) # corrigir etiqueta
+
+# 5000
+
+labels = levels(expr)
+col.cell2 = c("purple","orange", "green")[expr][1:50]
+heatmap.2(highly_variable_lcpm.5000[,1:50],
+          col=rev(morecols(50)),
+          trace="column",
+          main="Top 10 genes mais variáveis entre 50 amostras aleatórias",
+          ColSideColors=col.cell2,scale="row",
+          margins = c(5, 12))
+legend("left", legend=labels, fill=c("purple","orange","green")) # corrigir etiqueta
+
+# 10000
+
+labels = levels(expr)
+col.cell2 = c("purple","orange", "green")[expr][1:50]
+heatmap.2(highly_variable_lcpm.10000[,1:50],
+          col=rev(morecols(50)),
+          trace="column",
+          main="Top 10 genes mais variáveis entre 50 amostras aleatórias",
+          ColSideColors=col.cell2,scale="row",
+          margins = c(5, 12))
+legend("left", legend=labels, fill=c("purple","orange","green")) # corrigir etiqueta
+
 ```
 
+### Preparação das matrizes para treino
 
+Para criar o conjunto de dados para o treino dos modelos precisamos primeiro de transpor a matriz de perfis de expressão e criar a variável-alvo, neste caso o fenótipo.
 
-#Preparação das matrizes para treino
 ```{r}
 # Preparar as amostras e o tipo
 expr_data = t(highly_variable_lcpm)
@@ -1387,8 +1493,6 @@ expr_profiles$phenotype = factor(expr_profiles$phenotype, levels = 1:3 , labels 
 dim(expr_profiles)
 ```
 
-
-
 ```{r}
 library(caret)
 #library(RSNNS)
@@ -1398,16 +1502,13 @@ library(dplyr)
 library(recipes)
 ```
 
-Vamos testar com o top 100, 500, 1000, 10000 e total
+## Treino dos modelos
 
-A lógica será ver se há diferenças significativas nos modelos e se é introduzida variabilidade suficiente nos perfis para ter maior granulometria.
+Nos blocos de código abaixo realizamos o treino dos diferentes modelos para os diferentes conjuntos de dados supraindicados e iremos analisar a sua performance através da sua matriz de confusão, *recalling*, *accuracy*, precisão e F1 score. 
 
-Top 100, 500 e 1000, 1000 e total em random forest tem sempre uma accuracy de 100% o que é suspeito pois não é plausível considerar um modelo que acerte 100% das vezes, mesmo com cross validation e bootstraping. Isto pode estar relacionado com o facto de o dataset não ser grande o suficiente, pelo que seria importante utilizar mais amostras ou um data set mais extenso.
+### Criação dos dados de treino
 
-Para o MLP vemos diferenças, tendo o modelo uma accuracy de 100% para top 100, 500 e 1000 mas começando a reduzir a accuracy com maior número de genes nos perfis. Isto já é um comportamento mais ajustado à realidade, sobretudo sendo que o maior elemento de confusão está entre os tipos TRU e prox.-prolif que são os que têm o perfil de expressão mais semelhante em alguns genes como é possível ver nos heatmaps. O modelo com melhores resultados foi o testado em 10000
-
-É aqui que testamos o model mix em que cruzamos random forests e mlp para obtenção de resultados mais fiáveis.
-
+Começamos por particionar os dados, utilizando uma fração de 80% para treino e uma fração de 20% para testes, seguindo as boas práticas geralmente aceites no que respeita a aprendizagem automática (colocar referências).
 
 ```{r}
 # Criação do training set
@@ -1431,13 +1532,11 @@ trCtrl = trainControl(
 dim(trainData)
 
 ```
-# Treino com top 100
 
-## Random Forests
+### Random forests
 
 ```{r}
-start = Sys.time()
-
+# Top 100
 interv = 1:100
 
 luad.rf.100 = caret::train(
@@ -1448,50 +1547,22 @@ luad.rf.100 = caret::train(
   tuneLength = 5, 
   preProc = c("center", "scale")
   )
-
-end = Sys.time()
-
-print(end - start)
 ```
+
+
 ```{r}
-#luad.rf.100$finalModel
-#luad.rf.100$results
+# Utilizamos o modelo de inferência no conjunto de testes
 pred.rf.100 = predict(luad.rf.100,testData[,interv])
+
+# Geramos e analisamos a matriz de confusão
 cm.rf.100 = caret::confusionMatrix(pred.rf.100, testData$phenotype)
-cm.rf.100
-```
-##MLP
-
-```{r}
-start = Sys.time()
-luad.mlp.100 = caret::train(
-  trainData[,interv],
-  trainData$phenotype, 
-  method = 'mlp', 
-  trControl = trainControl(method='cv',number='5')
-)
-end = Sys.time()
-print(end - start)
-
-```
-```{r}
-#luad.mlp.100$finalModel
-#luad.mlp.100$results
-pred.mlp.100 = predict(luad.mlp.100,testData[,interv])
-cm.mlp.100 = caret::confusionMatrix(pred.mlp.100, testData$phenotype)
-cm.mlp.100
-cm.mlp.100$overall
-cm.mlp.100$byClass
+cm.rf.100$overall
+cm.rf.100$byClass
 ```
 
 
-# Treino com top 500
-
-## Random Forests
-
 ```{r}
-start = Sys.time()
-
+# Top 500
 interv = 1:500
 
 luad.rf.500 = caret::train(
@@ -1502,52 +1573,21 @@ luad.rf.500 = caret::train(
   tuneLength = 5, 
   preProc = c("center", "scale")
   )
-
-end = Sys.time()
-
-print(end - start)
 ```
 
+
 ```{r}
-#luad.rf.500$finalModel
-#luad.rf.500$results
+# Utilizamos o modelo de inferência no conjunto de testes
 pred.rf.500 = predict(luad.rf.500,testData[,interv])
+
+# Geramos e analisamos a matriz de confusão
 cm.rf.500 = caret::confusionMatrix(pred.rf.500, testData$phenotype)
 cm.rf.500$overall
 cm.rf.500$byClass
 ```
-##MLP
 
 ```{r}
-start = Sys.time()
-luad.mlp.500 = caret::train(
-  trainData[,interv],
-  trainData$phenotype, 
-  method = 'mlp', 
-  trControl = trainControl(method='cv',number='5')
-)
-end = Sys.time()
-print(end - start)
-
-```
-
-```{r}
-#luad.mlp.500$finalModel
-#luad.mlp.500$results
-pred.mlp.500 = predict(luad.mlp.500,testData[,interv])
-cm.mlp.500 = caret::confusionMatrix(pred.mlp.500, testData$phenotype)
-cm.mlp.500
-cm.mlp.500$overall
-cm.mlp.500$byClass
-```
-
-# Treino com top 1000
-
-## Random Forests
-
-```{r}
-start = Sys.time()
-
+# Top 1000
 interv = 1:1000
 
 luad.rf.1000 = caret::train(
@@ -1558,55 +1598,22 @@ luad.rf.1000 = caret::train(
   tuneLength = 5, 
   preProc = c("center", "scale")
   )
-
-end = Sys.time()
-
-print(end - start)
 ```
 
+
 ```{r}
-#luad.rf.1000$finalModel
-#luad.rf.1000$results
+# Utilizamos o modelo de inferência no conjunto de testes
 pred.rf.1000 = predict(luad.rf.1000,testData[,interv])
+
+# Geramos e analisamos a matriz de confusão
 cm.rf.1000 = caret::confusionMatrix(pred.rf.1000, testData$phenotype)
 cm.rf.1000$overall
 cm.rf.1000$byClass
 ```
-##MLP
+
 
 ```{r}
-start = Sys.time()
-luad.mlp.1000 = caret::train(
-  trainData[,interv],
-  trainData$phenotype, 
-  method = 'mlp', 
-  trControl = trainControl(method='cv',number='5')
-)
-end = Sys.time()
-print(end - start)
-
-```
-
-```{r}
-#luad.mlp.1000$finalModel
-#luad.mlp.1000$results
-pred.mlp.1000 = predict(luad.mlp.1000,testData[,interv])
-cm.mlp.1000 = caret::confusionMatrix(pred.mlp.1000, testData$phenotype)
-cm.mlp.1000
-cm.mlp.1000$overall
-cm.mlp.1000$byClass
-
-
-```
-
-
-# Treino com top 5000
-
-## Random Forests
-
-```{r}
-start = Sys.time()
-
+# Top 5000
 interv = 1:5000
 
 luad.rf.5000 = caret::train(
@@ -1617,52 +1624,21 @@ luad.rf.5000 = caret::train(
   tuneLength = 5, 
   preProc = c("center", "scale")
   )
-
-end = Sys.time()
-
-print(end - start)
 ```
 
 ```{r}
-#luad.rf.5000$finalModel
-#luad.rf.5000$results
+# Utilizamos o modelo de inferência no conjunto de testes
 pred.rf.5000 = predict(luad.rf.5000,testData[,interv])
+
+# Geramos e analisamos a matriz de confusão
 cm.rf.5000 = caret::confusionMatrix(pred.rf.5000, testData$phenotype)
 cm.rf.5000$overall
 cm.rf.5000$byClass
 ```
-##MLP
+
 
 ```{r}
-start = Sys.time()
-luad.mlp.5000 = caret::train(
-  trainData[,interv],
-  trainData$phenotype, 
-  method = 'mlp', 
-  trControl = trainControl(method='cv',number='5')
-)
-end = Sys.time()
-print(end - start)
-
-```
-
-```{r}
-#luad.mlp.5000$finalModel
-#luad.mlp.5000$results
-pred.mlp.5000 = predict(luad.mlp.5000,testData[,interv])
-cm.mlp.5000 = caret::confusionMatrix(pred.mlp.5000, testData$phenotype)
-cm.mlp.5000
-cm.mlp.5000$overall
-cm.mlp.5000$byClass
-```
-
-# Treino com top 10000
-
-## Random Forests
-
-```{r}
-start = Sys.time()
-
+# Top 10000
 interv = 1:10000
 
 luad.rf.10000 = caret::train(
@@ -1673,44 +1649,158 @@ luad.rf.10000 = caret::train(
   tuneLength = 5, 
   preProc = c("center", "scale")
   )
-
-end = Sys.time()
-
-print(end - start)
 ```
 
+
 ```{r}
-#luad.rf.10000$finalModel
-#luad.rf.10000$results
+# Utilizamos o modelo de inferência no conjunto de testes
 pred.rf.10000 = predict(luad.rf.10000,testData[,interv])
+
+# Geramos e analisamos a matriz de confusão
 cm.rf.10000 = caret::confusionMatrix(pred.rf.10000, testData$phenotype)
+cm.rf.10000
 cm.rf.10000$overall
 cm.rf.10000$byClass
 ```
-##MLP
+
+### Multi-Layer Perceptron (MLP)
 
 ```{r}
-start = Sys.time()
+# Top 100
+interv = 1:100
+
+luad.mlp.100 = caret::train(
+  trainData[,interv],
+  trainData$phenotype, 
+  method = 'mlp', 
+  trControl = trainControl(method='cv',number='5')
+)
+
+```
+
+```{r}
+# Utilizamos o modelo de inferência no conjunto de testes
+pred.mlp.100 = predict(luad.mlp.100,testData[,interv])
+
+# Geramos e analisamos a matriz de confusão
+cm.mlp.100 = caret::confusionMatrix(pred.mlp.100, testData$phenotype)
+cm.mlp.100
+cm.mlp.100$overall
+cm.mlp.100$byClass
+```
+
+```{r}
+# Top 500
+
+interv = 1:500
+
+luad.mlp.500 = caret::train(
+  trainData[,interv],
+  trainData$phenotype, 
+  method = 'mlp', 
+  trControl = trainControl(method='cv',number='5')
+)
+
+```
+
+```{r}
+# Utilizamos o modelo de inferência no conjunto de testes
+pred.mlp.500 = predict(luad.mlp.500,testData[,interv])
+
+# Geramos e analisamos a matriz de confusão
+cm.mlp.500 = caret::confusionMatrix(pred.mlp.500, testData$phenotype)
+cm.mlp.500
+cm.mlp.500$overall
+cm.mlp.500$byClass
+```
+
+```{r}
+# Top 1000
+
+interv = 1:1000
+
+luad.mlp.1000 = caret::train(
+  trainData[,interv],
+  trainData$phenotype, 
+  method = 'mlp', 
+  trControl = trainControl(method='cv',number='5')
+)
+
+```
+
+```{r}
+# Utilizamos o modelo de inferência no conjunto de testes
+pred.mlp.1000 = predict(luad.mlp.1000,testData[,interv])
+
+# Geramos e analisamos a matriz de confusão
+cm.mlp.1000 = caret::confusionMatrix(pred.mlp.1000, testData$phenotype)
+cm.mlp.1000
+cm.mlp.1000$overall
+cm.mlp.1000$byClass
+
+
+```
+
+
+```{r}
+# Top 5000
+
+interv = 1:5000
+
+luad.mlp.5000 = caret::train(
+  trainData[,interv],
+  trainData$phenotype, 
+  method = 'mlp', 
+  trControl = trainControl(method='cv',number='5')
+)
+
+```
+
+```{r}
+# Utilizamos o modelo de inferência no conjunto de testes
+pred.mlp.5000 = predict(luad.mlp.5000,testData[,interv])
+
+# Geramos e analisamos a matriz de confusão
+cm.mlp.5000 = caret::confusionMatrix(pred.mlp.5000, testData$phenotype)
+cm.mlp.5000
+cm.mlp.5000$overall
+cm.mlp.5000$byClass
+```
+
+
+
+```{r}
+# Top 10000
+interv = 1:10000
+
 luad.mlp.10000 = caret::train(
   trainData[,interv],
   trainData$phenotype, 
   method = 'mlp', 
   trControl = trainControl(method='cv',number='5')
 )
-end = Sys.time()
-print(end - start)
-
 ```
 
 ```{r}
-#luad.mlp.10000$finalModel
-#luad.mlp.10000$results
+# Utilizamos o modelo de inferência no conjunto de testes
 pred.mlp.10000 = predict(luad.mlp.10000,testData[,interv])
+
+# Geramos e analisamos a matriz de confusão
 cm.mlp.10000 = caret::confusionMatrix(pred.mlp.10000, testData$phenotype)
 cm.mlp.10000
 cm.mlp.10000$overall
 cm.mlp.10000$byClass
 ```
+
+## Análise de Resultados
+
+Ao analisar os resultados obtidos concluímos que o modelo de random forests é o modelo com melhores resultados, obtendo sempre uma precisão de 100% na classificação de amostras ao fenótipo correspondente. Contudo, estes resultados são algo suspeitos pois não é plausível existir um modelo que acerte 100% dos casos, mesmo com a aplicação de técnicas de validação cruzada e bootstrapping. Estes resultados podem estar relacionados com o facto de o conjunto de dados que estamos a utilizar não ser grande o suficiente. Seria interessante portanto utilizar um conjunto de dados mais extenso e voltar a testar e treinar os modelos. 
+
+Já para os resultados do modelo MLP, vemos que este apresenta uma precisão de 100% para os "top" 100, 500 e 1000 entrando depois em decrescimo à medida que vamos tendo maior número de genes nos perfis. É de notar, no entanto, que a performance do modelo para 10000 genes é superior à performance para 5000 genes, o que pode representar que podem haver bastantes semelhanças nos top 5000 genes já haver fatores mais discrepantes quando voltamos a ter uma maior variabilidade de genes. Todavia este já é um comportamento mais ajustado à realidade, sobretudo sendo que o maior elemento de confusão está entre os tipos TRU e prox.-prolif que, através da análise dos heatmaps, podemos verificar que são os que apresentam os perfis de expressão mais similares.
+
+**SUGESTÃO PARA VEREM SE CONCORDAM**: Consideraria que o MLP não é o mais adequado, atendendo ao tipo de modelo, mas ainda assim demonstra uma performance satisfatória, tendo obtido uma precisão média na ordem dos 75%.
+
+
 
 ```{r}
 # Guardamos todos os modelos até aqui usados just in case
@@ -1729,9 +1819,6 @@ saveRDS(luad.mlp.500, file = 'luad.mlp.500.rds')
 saveRDS(luad.mlp.5000, file = 'luad.mlp.5000.rds')
 
 ```
-
-
-
 
 # Treino com todos
 
@@ -1764,6 +1851,7 @@ cm.rf.19529 = caret::confusionMatrix(pred.rf.19529, testData$phenotype)
 cm.rf.19529$overall
 cm.rf.19529$byClass
 ```
+
 ##MLP
 
 ```{r}
@@ -1788,7 +1876,6 @@ cm.mlp.19529
 cm.mlp.19529$overall
 cm.mlp.19529$byClass
 ```
-
 
 # Bibliografia
 

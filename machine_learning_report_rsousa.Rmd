@@ -1,0 +1,6 @@
+# Notebook apenas com resultados de ML com modelos pré-treinados no report original
+
+```{r}
+modelo = readRDS('./models/random_forests/luad.rf.500.rds')
+```
+
