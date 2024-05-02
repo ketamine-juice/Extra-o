@@ -1810,6 +1810,7 @@ saveRDS(luad.rf.1000, file = 'luad.rf.1000.rds')
 saveRDS(luad.rf.10000, file = 'luad.rf.10000.rds')
 saveRDS(luad.rf.500, file = 'luad.rf.500.rds')
 saveRDS(luad.rf.5000, file = 'luad.rf.5000.rds')
+saveRDS(luad.rf.19529, file = 'luad.rf.19529.rds')
 
 # Os MLPs
 saveRDS(luad.mlp.100, file = 'luad.mlp.100.rds')
@@ -1817,7 +1818,7 @@ saveRDS(luad.mlp.1000, file = 'luad.mlp.1000.rds')
 saveRDS(luad.mlp.10000, file = 'luad.mlp.10000.rds')
 saveRDS(luad.mlp.500, file = 'luad.mlp.500.rds')
 saveRDS(luad.mlp.5000, file = 'luad.mlp.5000.rds')
-
+saveRDS(luad.mlp.19529, file = 'luad.mlp.19529.rds')
 ```
 
 # Treino com todos
@@ -1835,7 +1836,7 @@ luad.rf.19529 = caret::train(
   method = c('rf'), 
   trControl = trainControl(method = 'boot', number = 5), 
   tuneLength = 5, 
-  preProc = c("center", "scale")
+  preProc = c("center", "scale") 
   )
 
 end = Sys.time()
@@ -1869,13 +1870,20 @@ print(end - start)
 
 ```{r}
 #luad.mlp.19529$finalModel
-#luad.mlp.19529$results
+luad.mlp.19529$results
 pred.mlp.19529 = predict(luad.mlp.19529,testData[,interv])
 cm.mlp.19529 = caret::confusionMatrix(pred.mlp.19529, testData$phenotype)
 cm.mlp.19529
 cm.mlp.19529$overall
 cm.mlp.19529$byClass
 ```
+
+```{r}
+saveRDS(luad.rf.19529, file = 'luad.rf.19529.rds')
+saveRDS(luad.mlp.19529, file = 'luad.mlp.19529.rds')
+
+```
+
 
 # Bibliografia
 
