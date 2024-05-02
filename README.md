@@ -1,3 +1,5 @@
+This is a bakcup.
+
 # Análise de Expressão Diferencial
 
 Este repositório contém o código e a documentação para uma análise de expressão diferencial de dados de adenocarcinoma pulmonar (LUAD). O estudo foi desenvolvido no âmbito da Unidade Curricular de Extração de Conhecimento de Dados Biológicos do Mestrado em Bioinformática, e é resultado do trabalho conjunto de Mariana Oliveira (PG52648), Rui Sousa (PG21019) e Samuel Baptista (PG49130).
