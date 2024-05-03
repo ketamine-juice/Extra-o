@@ -134,6 +134,11 @@ suppressMessages({
   if (!require("caret"))
     install.packages("caret")
 
+})
+```
+
+```{r bibliotecas}
+
   # carregamento de bibliotecas
 
   library(edgeR)
@@ -151,8 +156,8 @@ suppressMessages({
   library(dplyr)
   library(annotables)
   library(caret)
-})
 ```
+
 
 ## Transferência, carregamento e preparação dos datasets necessários
 
@@ -193,6 +198,8 @@ Após a transferência dos dados é então gerado um objeto `summarizedExperimen
 
 # Alteramos o working  directory para a raiz, para ser mais fácil utilizar as diferentes pastas (modelos, scripts, etc.)
 setwd('../')
+
+
 
 # Carregamento do ficheiro
 load('luad_data_load.rda')
@@ -269,6 +276,7 @@ expr = luad_data$paper_expression_subtype
 
 meta = data.frame(sample_id = sample_id, gender = gender, expr = expr)
 
+
 ```
 
 Foi realizado o pré-processamento dos metadados. Inicialmente, foi verificada a presença de valores ausentes em ambas as variáveis do dataset garantindo que os metadados estão prontos para serem utilizados, sem valores ausentes ou inconsistentes.
@@ -311,6 +319,17 @@ meta = meta[filter,]
 
 any(is.na(meta$expr))
 
+#Verificação de duplicados
+
+# Verificar se há duplicatas na coluna "sample_id"
+duplicados <- any(duplicated(meta$sample_id))
+
+duplicados
+
+library(dplyr)
+
+# Remover as linhas duplicadas com base na coluna "sample_id"
+meta = distinct(meta, sample_id, .keep_all = TRUE)
 
 #Dimensões da variável
 
@@ -534,7 +553,7 @@ boxplot(logcounts[,151:200], xlab="", ylab="Log2 counts per million",las=2)
 abline(h=median(logcounts),col="blue")
 title("Boxplots de logCPMs")
 
-boxplot(logcounts[,201:242], xlab="", ylab="Log2 counts per million",las=2)
+boxplot(logcounts[,201:239], xlab="", ylab="Log2 counts per million",las=2)
 abline(h=median(logcounts),col="blue")
 title("Boxplots de logCPMs")
 ```
@@ -591,27 +610,7 @@ heatmap.2(highly_variable_lcpm[,1:50],
 legend("left", legend=labels, fill=c("purple","orange","green")) # corrigir etiqueta
 ```
 
-Ao analisar os heatmaps, torna-se evidente a presença de diferentes perfis de expressão genética para cada um dos subtipos de LUAD. Em primeiro lugar efetuou-se uma pesquisa sobre a correspondência dos *gene ID*s através dos respetivos *Ensembl ID*s.
-
--   ENSG00000151632 → AKR1C2
-
--   ENSG00000248144 → ADH1C
-
--   ENSG00000225972 → MTND1P
-
--   ENSG00000286042 → LCAL1
-
--   ENSG00000186529 → CYP4F3
-
--   ENSG00000170689 → HOXB9
-
--   ENSG00000169297 → NR0B1
-
--   ENSG00000198074 → AKR1B10
-
--   ENSG00000125255 → SLC10A2
-
--   ENSG00000266976 → AC079466
+Ao analisar os heatmaps, torna-se evidente a presença de diferentes perfis de expressão genética para cada um dos subtipos de LUAD.
 
 Conseguiu-se concluir que os genes MTND1P, LCAL1, da família AKR1, HOXB9, NR0B1, CYP4F3 e ADH1C são sobrexpressos no subtipo TRU. Além disso, observa-se que no subtipo PP destacam-se a sobrexpressão dos genes SLC10A2 e AC079466 (ENSG00000266976), com níveis de expressão dentro da média para os outros subtipos. No entanto, também é visível uma ligeira sobrexpressão do gene ADH1C e a subexpressão do gene AKR1C2. No subtipo PI, destaca-se a subexpressão do gene ADH1C e uma ligeira sobrexpressão dos genes AKR1C2, SLC10A2 e AC079466
 
@@ -1151,31 +1150,32 @@ Em primeiro lugar, foi instalado mais um package que auxiliará na visualizaçao
 library(factoextra) 
 
 ```
-
-De seguida, procedeu-se à preparação do dados para a realização do PCA. Fez-se a substituição dos nomes das amostras (representando pacientes) no conjunto de dados pelos valores da coluna "expr". Pois, permitirá enriquecer a análise de PCA ao incorporar informações contextuais sobre as amostras.
-
-```{r}
-# Supondo que "dados" seja o seu conjunto de dados e "metadados" seja o dataframe de metadados
-
-# Obter os nomes das amostras do dataframe de metadados
-nomes_amostras = meta$sample_id
-
-# Correspondência entre os nomes das amostras no conjunto de dados e no dataframe de metadados
-indices_correspondentes = match(colnames(counts_keep), nomes_amostras)
-
-# 3. Substituir os nomes das colunas pelos valores da coluna "expr" no dataframe de metadados
-colnames(counts_keep) <- meta$expr[indices_correspondentes]
-
-```
-
-
-De seguida, foi efetuado o PCA através da função "prcomp()". Uma vez que esta função "prcomp" espera que as colunas sejam genes e as linhas as amostras, temos de efetuar a transporta da matriz do nosso dataset. O objetivo será formar um gráfico para perceber como é que os genes se encontram relacionados.
+De seguida, procedeu-se à preparação do dados para a realização do PCA. Fez-se a substituição dos nomes das amostras (id dos pacientes) no conjunto de dados pelos valores da coluna "expr". Pois, permitirá enriquecer a análise de PCA ao incorporar informações contextuais sobre as amostras.
 
 ```{r}
 data_normal = counts_keep
 
-pca = prcomp(t(data_normal), center = F)
+# Obter os nomes das colunas em data_normal
+nomes_colunas = colnames(data_normal)
 
+# Obter os sample_id correspondentes em meta
+sample_id_meta = meta$sample_id
+
+# Encontrar as correspondências entre os sample_id em data_normal e meta
+indices_correspondentes = match(nomes_colunas, sample_id_meta)
+
+# Obter os valores de expr correspondentes
+valores_expr = meta$expr[indices_correspondentes]
+
+# Adicionar os valores de expr ao nome das colunas em data_normal no início
+colnames(data_normal) = paste(valores_expr, nomes_colunas, sep = "_")
+
+```
+
+De seguida, foi efetuado o PCA através da função "prcomp()".
+
+```{r}
+pca = prcomp(data_normal, center = F)
 ```
 
 Vamos agora averiguar quanta variação é que cada PC representa. Uma vez que a percentagem de cada quantidade de variação em cada PC é mais interessante que o próprio valor, vamos observar esses resultados aravés de uma gráfico de barras.
@@ -1185,36 +1185,47 @@ fviz_eig(pca, addlabels = TRUE)
 ```
 O primeiro componente principal contém a maior parte da variação dos dados, o segundo contém a segunda maior variação, e assim sucessivamente. Conseguimos perceber que os dois primeiros PCs contêm a variação de quase todo o dataset, sendo que o PC1 contém mais de metade de toda a variação dos dados.
 
-De seguida, usamos as duas primeiras colunas de "x" para criar um gráfico 2D, que usa os dois primeiros componentes principais (PC), PC1 e PC2.
+Para compreender a correlação entre os subtipos de expressão e a forma como estão bem representadas pelo nosso modelo, podemos utilizar a função fviz_pca_var() para desenhar um gráfico de correlação de variáveis, utilizando o comando abaixo.
 
 ```{r}
-#plot(pca$x[,1], pca$x[,2])
 
 fviz_pca_var(pca, col.var = "cos2",
              gradient.cols = c("#FFCC00", "#CC9933", "#660033", "#330033"),
              repel = TRUE) 
 ```
 
-Através da visualização do gráfico, podemos observar que 1 amostra encontra-se à esquerda e que outras duas encomtram-se mais à direita.
+Podemos ver que os três tipos de subexpressão estão agrupados, o que significa que estão correlacionados entre si.
 
-De seguida, procedemos à análise com o uso do package ggplot2.
+Podemos também recorrer a um gráfico de dispersão. Cada ponto no gráfico representa uma amostra, e sua posição é determinada pelas pontuações nos componentes principais (PC1 e PC2) do PCA. A cor de cada ponto corresponde ao valor da variável `expr` no dataframe de metadados.
 
 ```{r}
-#Formatação dos dados
-pca_data = data.frame(Sample=rownames(pca$x), X = pca$x[,1], Y = pca$x[,2])
-
-pca_data
+plot(pca$x[,1], pca$x[,2], col = as.integer(meta$expr), pch = 16, xlab = "PC1", ylab = "PC2")
+legend(-8000000,0,legend=levels(meta$expr), col=c("black","pink", "green"), pch=19)
 ```
 
-O eixo dos x diz-nos que o PC1 engloba 89.1% da variação total do conjunto de dados e o eixo do y engloba 10.9% da variação total do conjunto de dados.
+Através deste gráfico de dispersão das amostras, não são observados clusters, isso pode indicar que as variáveis individuais se comportam de maneira diferente em relação à variação total dos dados.
+
+
+Parece haver correlação entre os subtipos de expressão uma vez que se encontram na mesma cor. Porém, podemos ver que os subtipos encontram-se agrupados o que significam que apresentam perfis de expressão singulares apesar da aparente correlação entre eles.
+
+Agora passando à análise dos genes para descobrir como é que as amostras se relacionam.
+```{r}
+pca_gene = prcomp(t(data_normal))
+```
+
+```{r}
+plot(pca_gene$x[,1], pca_gene$x[,2],  col = as.integer(meta$expr), pch = 16, xlab = "PC1", ylab = "PC2")
+```
+
+No PCA dos genes, apenas três pontos são visíveis, indicando que a variação entre eles não é tão distintiva nas primeiras duas componentes principais. Isto pode ser devido à falta de variação entre os genes ou à presença de redundância nos dados, dificultando uma separação clara em um espaço de menor dimensionalidade
 
 A seguir, analisamos os "loading scores" do PC1 usando a infomação dos genes, uma vez que ele representa cerca de 90% da variação nos dados. Os "loading scores" representam o peso de cada gene nos PC's. Quando analisamos o PC1, estamos interessados na contribuição de cada gene para a variabilidade nos dados. Vamos examinar a magnitude usando a função abs() pois, estamos a considerar o valor absoluto dos "loading scores", concentrando-nos apenas na magnitude do impacto de cada gene. Se um gene tem um "loading score" alto em valor absoluto então ele tem uma forte influência na direção do PC1.
 
 ```{r}
 
-pca_genes = data.frame(Sample=rownames(pca$x), X = pca$x[,1], Y = pca$x[,2])
+pca_genes = data.frame(Sample=rownames(pca_gene$x), X = pca_gene$x[,1], Y = pca_gene$x[,2])
 
-loading_scores = pca$rotation[,1]
+loading_scores = pca_gene$rotation[,1]
 
 gene_scores = abs(loading_scores)
 
@@ -1230,7 +1241,7 @@ top_10_genes
 Este conjunto de genes é o top 10 genes com maior impacto na variabilidade dos dados. Vamos agora averiguar se afetam a variabilidade do gráfico PCA 2D à esquerda ou à direita pois, um valor negativo indica que o gene empurra as amostras para a esquerda do gráfico do PCA 2D, enquanto um valor positivo indica que empurra para a direita.
 
 ```{r}
-pca$rotation[top_10_genes,1]
+pca_gene$rotation[top_10_genes,1]
 ```
 
 Todos os genes, exceto um, afetam a variabilidade à esquerda do gráfico PCA 2D.
@@ -1253,14 +1264,6 @@ geneIDs
 ```
 
 Sabe-se que, por exemplo, o gene DPEP3 apresenta o seu nível de expressão aumentado em casos de cancro do pulmão [@unknown-author-no-date]. Já o NCAPD2 é um biomarcador recente para o mau prognóstico do adenocarcinoma pulmonar [@li-2023]. O gene TAP2 apresenta defeitos na expressão em tumores pulmunares [@durgeau-2018].
-
-```{r}
-
-biplot(pca)
-
-```
-
-
 
 
 ```{r}
