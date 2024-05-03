@@ -1161,107 +1161,120 @@ Em primeiro lugar, foi instalado mais um package que auxiliará na visualizaçao
 
 ```{r}
 
-library(factoextra) # For PCA functions and visualizations
+library(factoextra) 
 
 ```
 
-De seguida, o conjunto de dados utilizado no PCA foi redimensionado uma vez que esta técnina é sensível à escala das variáveis. Foi feita uma padronização para que os dados tenham uma média de 0 e um desvio padrão de 1.
+De seguida, procedeu-se à preparação do dados para a realização do PCA. Fez-se a substituição dos nomes das amostras (representando pacientes) no conjunto de dados pelos valores da coluna "expr". Pois, permitirá enriquecer a análise de PCA ao incorporar informações contextuais sobre as amostras.
 
 ```{r}
-data_escala = scale(seqdata_filter) 
+# Supondo que "dados" seja o seu conjunto de dados e "metadados" seja o dataframe de metadados
+
+# Obter os nomes das amostras do dataframe de metadados
+nomes_amostras = meta$sample_id
+
+# Correspondência entre os nomes das amostras no conjunto de dados e no dataframe de metadados
+indices_correspondentes = match(colnames(counts_keep), nomes_amostras)
+
+# 3. Substituir os nomes das colunas pelos valores da coluna "expr" no dataframe de metadados
+colnames(counts_keep) <- meta$expr[indices_correspondentes]
 
 ```
 
-Uma vez que a função "prcomp" espera que as colunas sejam genes e as linhas as amostras, temos de efetuar a transporta da matriz do nosso dataset.
+
+De seguida, foi efetuado o PCA através da função "prcomp()". Uma vez que esta função "prcomp" espera que as colunas sejam genes e as linhas as amostras, temos de efetuar a transporta da matriz do nosso dataset. O objetivo será formar um gráfico para perceber como é que os genes se encontram relacionados.
 
 ```{r}
-pca = prcomp(t(data_escala), scale = TRUE)
+data_normal = counts_keep
+
+pca = prcomp(t(data_normal), center = F)
+
 ```
+
+Vamos agora averiguar quanta variação é que cada PC representa. Uma vez que a percentagem de cada quantidade de variação em cada PC é mais interessante que o próprio valor, vamos observar esses resultados aravés de uma gráfico de barras.
 
 ```{r}
-fviz_eig(pca)
+fviz_eig(pca, addlabels = TRUE)
 ```
+O primeiro componente principal contém a maior parte da variação dos dados, o segundo contém a segunda maior variação, e assim sucessivamente. Conseguimos perceber que os dois primeiros PCs contêm a variação de quase todo o dataset, sendo que o PC1 contém mais de metade de toda a variação dos dados.
 
-StatQuest: PCA in R (youtube.com)
-
-The first PC accounts for the most variation in the original data (the gene expression across all samples) and the 2nd PC account for the second most variation.
+De seguida, usamos as duas primeiras colunas de "x" para criar um gráfico 2D, que usa os dois primeiros componentes principais (PC), PC1 e PC2.
 
 ```{r}
-plot(pca$x[,1], pca$x[,2])
+#plot(pca$x[,1], pca$x[,2])
+
+fviz_pca_var(pca, col.var = "cos2",
+             gradient.cols = c("#FFCC00", "#CC9933", "#660033", "#330033"),
+             repel = TRUE) 
 ```
 
-Vamos agora averiguar quanta variação é que cada PC representa.
-
-Em primeiro lugar usamos o quadrado de sdev, desvio padrão, para calcular a quantidade de variação que cada componente principal (PC) representa. Uma vez que a percentagem de cada quantidade de variação em cada PC é mais interessante que o próprio valor, vamos observar esses resultados aravés de uma gráfico de barras.
-
-```{r}
-
-pca_var = pca$sdev^2
-
-pca_var_per = round(pca_var/sum(pca_var)*100, 1)
-
-barplot(pca_var_per[1:20], main = "Scree Plot", xlab = "Componente Principal (PC)", ylab = "Variação Percentual")
-```
-
-Conseguimos perceber que os dois primeiros PCs contêm a variação de todo o dataset, sendo que o PC1 contêm quase toda a variação dos dados.
+Através da visualização do gráfico, podemos observar que 1 amostra encontra-se à esquerda e que outras duas encomtram-se mais à direita.
 
 De seguida, procedemos à análise com o uso do package ggplot2.
 
 ```{r}
-
 #Formatação dos dados
 pca_data = data.frame(Sample=rownames(pca$x), X = pca$x[,1], Y = pca$x[,2])
 
 pca_data
 ```
 
-```{r}
+O eixo dos x diz-nos que o PC1 engloba 89.1% da variação total do conjunto de dados e o eixo do y engloba 10.9% da variação total do conjunto de dados.
 
-ggplot(data = pca_data, aes (x = X, y = Y, label = Sample)) +
-  geom_text() +
-  xlab(paste("PC1 - ", pca_var_per[1], "%", sep = "")) + 
-  ylab(paste("PC2 - ", pca_var_per[2], "%", sep = "")) +
-  theme_bw() + 
-  ggtitle("Gráfico PCA")
-
-```
-
-Next, we look into the loading scores of PC1 since it accounts for about 80% of the variation in the data. Let's look at the magnitude by using the function abs(), since genes that push samples to the left side of the graph have large negative values and genes that push to the right side of the graph have postive values
+A seguir, analisamos os "loading scores" do PC1 usando a infomação dos genes, uma vez que ele representa cerca de 90% da variação nos dados. Os "loading scores" representam o peso de cada gene nos PC's. Quando analisamos o PC1, estamos interessados na contribuição de cada gene para a variabilidade nos dados. Vamos examinar a magnitude usando a função abs() pois, estamos a considerar o valor absoluto dos "loading scores", concentrando-nos apenas na magnitude do impacto de cada gene. Se um gene tem um "loading score" alto em valor absoluto então ele tem uma forte influência na direção do PC1.
 
 ```{r}
+
+pca_genes = data.frame(Sample=rownames(pca$x), X = pca$x[,1], Y = pca$x[,2])
+
 loading_scores = pca$rotation[,1]
 
 gene_scores = abs(loading_scores)
 
+#ordenar a loading score por ordem descrescente
 gene_score_ranked = sort(gene_scores, decreasing = TRUE)
 
+#top 10 genes em valor absoluto
 top_10_genes = names(gene_score_ranked[1:10])
 
 top_10_genes
 ```
 
+Este conjunto de genes é o top 10 genes com maior impacto na variabilidade dos dados. Vamos agora averiguar se afetam a variabilidade do gráfico PCA 2D à esquerda ou à direita pois, um valor negativo indica que o gene empurra as amostras para a esquerda do gráfico do PCA 2D, enquanto um valor positivo indica que empurra para a direita.
+
 ```{r}
 pca$rotation[top_10_genes,1]
 ```
 
-They all push to the left.
+Todos os genes, exceto um, afetam a variabilidade à esquerda do gráfico PCA 2D.
+
+Vamos analisar os genes através dos seus IDs.
 
 ```{r}
+
+#BiocManager::install("EnsDb.Hsapiens.v79")
+
+library(EnsDb.Hsapiens.v79)
+
+top_10_genes <- gsub("\\..*", "", top_10_genes)
+
+
+geneIDs = ensembldb::select(EnsDb.Hsapiens.v79, keys= top_10_genes, keytype = "GENEID", columns = c("SYMBOL","GENEID"))
+
+geneIDs
+
+```
+
+Sabe-se que, por exemplo, o gene DPEP3 apresenta o seu nível de expressão aumentado em casos de cancro do pulmão [@unknown-author-no-date]. Já o NCAPD2 é um biomarcador recente para o mau prognóstico do adenocarcinoma pulmonar [@li-2023]. O gene TAP2 apresenta defeitos na expressão em tumores pulmunares [@durgeau-2018].
+
+```{r}
+
 biplot(pca)
+
 ```
 
-```{r}
-plot(pca$x[,1], pca$x[,2], pch 
-= 16, xlab = "PC1", ylab = "PC2")
-```
 
-```{r}
-pca2 = princomp(scale(data_escala))
-```
 
-```{r}
-plot(pca2)
-```
 
 # Bibliografia
 
