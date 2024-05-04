@@ -133,14 +133,20 @@ suppressMessages({
   
   if (!require("caret"))
     install.packages("caret")
+  
+  if (!require("EnsDb.Hsapiens.v79"))
+    BiocManager::install("EnsDb.Hsapiens.v79")
 
+  if (!require("factoextra"))
+    install.packages("factoextra")
+  
 })
 ```
 
 ```{r bibliotecas}
 
   # carregamento de bibliotecas
-
+suppressMessages({
   library(edgeR)
   library(limma)
   library(Glimma)
@@ -155,9 +161,11 @@ suppressMessages({
   library(ggplot2)
   library(dplyr)
   library(annotables)
+  library(EnsDb.Hsapiens.v79)
   library(caret)
+  library(factoextra)
+})
 ```
-
 
 ## Transferência, carregamento e preparação dos datasets necessários
 
@@ -197,7 +205,7 @@ Após a transferência dos dados é então gerado um objeto `summarizedExperimen
 #' O ficheiro encontra-se aqui: https://ruisousa.me/luad_dataset/luad_data_load.rda
 
 # Alteramos o working  directory para a raiz, para ser mais fácil utilizar as diferentes pastas (modelos, scripts, etc.)
-setwd('../')
+#setwd('../')
 
 
 
@@ -326,8 +334,6 @@ duplicados <- any(duplicated(meta$sample_id))
 
 duplicados
 
-library(dplyr)
-
 # Remover as linhas duplicadas com base na coluna "sample_id"
 meta = distinct(meta, sample_id, .keep_all = TRUE)
 
@@ -344,7 +350,6 @@ Após, foi feita uma filtragem das colunas do dataframe `seqdata` para manter ap
 O resultado é armazenado na variável `seqdata_filter`, que conterá apenas as colunas de `seqdata` associadas a amostras com informação sobre o subtipo de expressão. Esta variável servirá para, posteriormente, criar o objeto de análise de expressão genética
 
 ```{r criacao-seqdata_filter}
-
 seqdata_filter = seqdata[,meta$expr]
 ```
 
@@ -564,7 +569,7 @@ Portanto, a identificação e o entendimento dos outliers são cruciais para int
 
 ### Comparação de níveis de expressão para os diferentes subtipos de LUAD
 
-Abaixo é feita a análise dos padrões de expressão genética associados a diferentes subtipos de LUAD (TRU, PI e PP) dos 10 genes com maior variabilidade detetada com recurso a um *heatmap*. A utilização de *heatmaps* é particularmente útil para análises de expressão genética uma vez que permite a identificação de padrões de expressão genética associados a condições específicas que podem dar pistas no sentido de identificação sobre biomarcadores para cada condição.
+Abaixo é feita a análise dos padrões de expressão genética associados a diferentes subtipos de LUAD (TRU, PI e PP) dos 30 genes com maior variabilidade detetada com recurso a um *heatmap*. A utilização de *heatmaps* é particularmente útil para análises de expressão genética uma vez que permite a identificação de padrões de expressão genética associados a condições específicas que podem dar pistas no sentido de identificação sobre biomarcadores para cada condição.
 
 Abaixo é apresentado um *heatmap* para os 30 genes com maior variabilidade em termos de níveis de expressão para cada um dos subtipos de LUAD (TRU, PI e PP).
 
@@ -575,7 +580,7 @@ Para facilitar a interpretação dos dados e apoiar a análise do heatmap para t
 var_genes = apply(logcounts, 1, var)
 
 # Seleção dos 10 genes com maior variabilidade
-select_var = names(sort(var_genes, decreasing=TRUE))[1:100]
+select_var = names(sort(var_genes, decreasing=TRUE))[1:30]
 select_var
 
 # Seleciona as linhas da matriz 'logcounts' com base nos índices fornecidos em 'select_var'
@@ -661,8 +666,8 @@ Em primeiro lugar, colocaram-se os dados referentes aos subtipos de expressão n
 ```{r}
 
 # Substituir caracteres especiais nos valores de expr
-meta$expr <- gsub("prox.-prolif.", "prox_prolif", meta$expr)
-meta$expr <- gsub("prox.-inflam", "prox_inflam", meta$expr)
+meta_expr <- gsub("prox.-prolif.", "prox_prolif", meta$expr)
+meta_expr <- gsub("prox.-inflam", "prox_inflam", meta$expr)
 
 meta_expr = paste(meta$expr)
 
@@ -925,22 +930,22 @@ my_genes_TRU = results_TRU_mod$row_names
 
 # Filter 'grch38' based on 'row_names' from 'resultados_mod'
 resultados_id_PP <- grch38 %>%
-  filter(ensgene %in% results_PP_mod$row_names) %>%
+  dplyr::filter(ensgene %in% results_PP_mod$row_names) %>%
   # Select only the 'entrez' column
-  select(symbol)
+  dplyr::select(symbol)
 resultados_id_TRU <- grch38 %>%
-  filter(ensgene %in% results_TRU_mod$row_names) %>%
+  dplyr::filter(ensgene %in% results_TRU_mod$row_names) %>%
   # Select only the 'entrez' column
-  select(symbol)
+  dplyr::select(symbol)
 
 resultados_ensembl_id_PP <- grch38 %>%
-  filter(ensgene %in% results_PP_mod$row_names) %>%
+  dplyr::filter(ensgene %in% results_PP_mod$row_names) %>%
   # Select both 'ensgene' and 'symbol' columns
-  select(ensgene, symbol)
+  dplyr::select(ensgene, symbol)
 resultados_ensembl_id_TRU <- grch38 %>%
-  filter(ensgene %in% results_TRU_mod$row_names) %>%
+  dplyr::filter(ensgene %in% results_TRU_mod$row_names) %>%
   # Select both 'ensgene' and 'symbol' columns
-  select(ensgene, symbol)
+  dplyr::select(ensgene, symbol)
 
 # Print the filtered table
 print(resultados_id_PP)
@@ -1017,7 +1022,7 @@ vector_PP = unlist(resultados_id_PP)
 vector_TRU = unlist(resultados_id_TRU)
 
 # Carregar ficheiro gmt
-setwd('../')
+#setwd('../')
 # Nota: Necessário fornecer o caminho com a localização do ficheiro
 
 #bg_genes_PP = prepare_gmt("~/h.all.v2023.2.Hs.symbols.gmt", vector_PP, savefile = #FALSE)
@@ -1137,20 +1142,7 @@ plotEnrichment(bg_genes_TRU[[head(fgseaRes_TRU[order(padj), ], 1)$pathway]],
 
 A técnica de redução de dimensionalidade, através da "Principal Component Analysis" (PCA), visa simplificar conjuntos de dados extensos, encontrando um conjunto menor de variáveis não correlacionadas que capturam a maior parte da variabilidade. Isso é alcançado através da transformação das variáveis originais em componentes principais, que são ordenados pela sua capacidade de explicar a variabilidade dos dados. Esta técnica é valiosa quando há muitas variáveis e potencial redundância nos dados, mas é importante normalizar os dados antes da análise para garantir resultados adequados.
 
-Em primeiro lugar, foi instalado mais um package que auxiliará na visualizaçao dos resultados da PCA.
-
-```{r}
-
-#install.packages("factoextra")
-
-```
-
-```{r}
-
-library(factoextra) 
-
-```
-De seguida, procedeu-se à preparação do dados para a realização do PCA. Fez-se a substituição dos nomes das amostras (id dos pacientes) no conjunto de dados pelos valores da coluna "expr". Pois, permitirá enriquecer a análise de PCA ao incorporar informações contextuais sobre as amostras.
+Procedeu-se à preparação do dados para a realização do PCA. Fez-se a substituição dos nomes das amostras (id dos pacientes) no conjunto de dados pelos valores da coluna "expr". Pois, permitirá enriquecer a análise de PCA ao incorporar informações contextuais sobre as amostras.
 
 ```{r}
 data_normal = counts_keep
@@ -1249,11 +1241,6 @@ Todos os genes, exceto um, afetam a variabilidade à esquerda do gráfico PCA 2D
 Vamos analisar os genes através dos seus IDs.
 
 ```{r}
-
-#BiocManager::install("EnsDb.Hsapiens.v79")
-
-library(EnsDb.Hsapiens.v79)
-
 top_10_genes <- gsub("\\..*", "", top_10_genes)
 
 
@@ -1265,26 +1252,15 @@ geneIDs
 
 Sabe-se que, por exemplo, o gene DPEP3 apresenta o seu nível de expressão aumentado em casos de cancro do pulmão [@unknown-author-no-date]. Já o NCAPD2 é um biomarcador recente para o mau prognóstico do adenocarcinoma pulmonar [@li-2023]. O gene TAP2 apresenta defeitos na expressão em tumores pulmunares [@durgeau-2018].
 
-
-```{r}
-# Libs usadas - remover mais tarde
-library(caret)
-```
-
 # Previsão de fenótipo utilizando aprendizagem automática
 
 Nesta secção pretende-se explorar várias abordagens de aprendizagem automática para prever o fenótipo do carcinoma com base no perfil de expressão genética. Iremos testar um conjunto alargado de modelos de modo a aferir qual o que será mais adequado. Para este processo iremos seguir uma pipeline de aprendizagem automática simples, com recurso à biblioteca `caret`, que simplifica o procedimento de treino uma vez que faz o *wrapping* de várias funções e facilita a paremetrização.
 
 Irão ser testados os seguintes modelos:
 
--   **Random Forests**: O modelo de aprendizagem automática com recurso a [random forests](https://www.sciencedirect.com/topics/engineering/random-forest) é um modelo de classificação que implementa um conjunto de árvores de decisão. O modelo sustenta-se na análise e classificação de dados com base em padrões. Este parece ser um modelo adequado para a identificação de fenótipos de cancro com base em perfis de expressão genética e pode ser um potencial modelo adequado para os nossos dados atendendo aos padrões claramente visíveis na representação dos dados por *heatmap*. Este modelo já foi inclusive corretamente implementado na previsão de fenótipos de cancro por Wang et al.
+-   **Random Forests**: O modelo de aprendizagem automática com recurso a [random forests](https://www.sciencedirect.com/topics/engineering/random-forest) é um modelo de classificação que implementa um conjunto de árvores de decisão. O modelo sustenta-se na análise e classificação de dados com base em padrões. Este parece ser um modelo adequado para a identificação de fenótipos de cancro com base em perfis de expressão genética e pode ser um potencial modelo adequado para os nossos dados atendendo aos padrões claramente visíveis na representação dos dados por *heatmap*. Este modelo já foi inclusive corretamente implementado na previsão de fenótipos de cancro por Wang et al.[@WANG20231]
+
 -   **Multi-Layer Perceptron (MLP)**: Um [MLP](https://www.sciencedirect.com/topics/veterinary-science-and-veterinary-medicine/multilayer-perceptron) é um tipo de [rede neuronal](https://www.sciencedirect.com/topics/social-sciences/neural-network) communmente utilizado na classificação de dados com base em padrões. Com base no seu funcionamento e lógica de utilização, poderá ter um desempenho interessante e adequado para o tipo de dados que estamos a analisar.
-
-```{r}
-#ML tests
-
-# Inspirado nisto: https://www.sciencedirect.com/science/article/pii/S0307904X23002809
-```
 
 ## Preparação de dados para análise
 
@@ -1330,18 +1306,6 @@ Conforme podemos visualizar nos heatmaps, há uma clara distinção para os dife
 mypalette = RColorBrewer::brewer.pal(9,"RdYlBu")
 morecols = colorRampPalette(mypalette)
 
-# Todos
-
-labels = levels(expr)
-col.cell2 = c("purple","orange", "green")[expr][1:50]
-heatmap.2(highly_variable_lcpm[,1:50],
-          col=rev(morecols(50)),
-          trace="column",
-          main="Top 10 genes mais variáveis entre 50 amostras aleatórias",
-          ColSideColors=col.cell2,scale="row",
-          margins = c(5, 12))
-legend("left", legend=labels, fill=c("purple","orange","green")) # corrigir etiqueta
-
 # 100
 
 labels = levels(expr)
@@ -1349,7 +1313,7 @@ col.cell2 = c("purple","orange", "green")[expr][1:50]
 heatmap.2(highly_variable_lcpm.100[,1:50],
           col=rev(morecols(50)),
           trace="column",
-          main="Top 10 genes mais variáveis entre 50 amostras aleatórias",
+          main="Top 100 genes mais variáveis entre 50 amostras aleatórias",
           ColSideColors=col.cell2,scale="row",
           margins = c(5, 12))
 legend("left", legend=labels, fill=c("purple","orange","green")) # corrigir etiqueta
@@ -1361,7 +1325,7 @@ col.cell2 = c("purple","orange", "green")[expr][1:50]
 heatmap.2(highly_variable_lcpm.500[,1:50],
           col=rev(morecols(50)),
           trace="column",
-          main="Top 10 genes mais variáveis entre 50 amostras aleatórias",
+          main="Top 500 genes mais variáveis entre 50 amostras aleatórias",
           ColSideColors=col.cell2,scale="row",
           margins = c(5, 12))
 legend("left", legend=labels, fill=c("purple","orange","green")) # corrigir etiqueta
@@ -1373,7 +1337,7 @@ col.cell2 = c("purple","orange", "green")[expr][1:50]
 heatmap.2(highly_variable_lcpm.1000[,1:50],
           col=rev(morecols(50)),
           trace="column",
-          main="Top 10 genes mais variáveis entre 50 amostras aleatórias",
+          main="Top 1000 genes mais variáveis entre 50 amostras aleatórias",
           ColSideColors=col.cell2,scale="row",
           margins = c(5, 12))
 legend("left", legend=labels, fill=c("purple","orange","green")) # corrigir etiqueta
@@ -1385,7 +1349,7 @@ col.cell2 = c("purple","orange", "green")[expr][1:50]
 heatmap.2(highly_variable_lcpm.5000[,1:50],
           col=rev(morecols(50)),
           trace="column",
-          main="Top 10 genes mais variáveis entre 50 amostras aleatórias",
+          main="Top 5000 genes mais variáveis entre 50 amostras aleatórias",
           ColSideColors=col.cell2,scale="row",
           margins = c(5, 12))
 legend("left", legend=labels, fill=c("purple","orange","green")) # corrigir etiqueta
@@ -1397,7 +1361,7 @@ col.cell2 = c("purple","orange", "green")[expr][1:50]
 heatmap.2(highly_variable_lcpm.10000[,1:50],
           col=rev(morecols(50)),
           trace="column",
-          main="Top 10 genes mais variáveis entre 50 amostras aleatórias",
+          main="Top 10000 genes mais variáveis entre 50 amostras aleatórias",
           ColSideColors=col.cell2,scale="row",
           margins = c(5, 12))
 legend("left", legend=labels, fill=c("purple","orange","green")) # corrigir etiqueta
@@ -1411,10 +1375,15 @@ Para criar o conjunto de dados para o treino dos modelos precisamos primeiro de 
 ```{r}
 # Preparar as amostras e o tipo
 expr_data = t(highly_variable_lcpm)
-phenotype = meta$expr
-phenotype
+
+# Utilizamos a variável dos meta dados para a usar "fresca"
+phenotype = na.omit(luad_data$paper_expression_subtype)
+
 expr_profiles = cbind(expr_data,phenotype)
 expr_profiles = as.data.frame(expr_profiles)
+labels = c('prox.-inflam','prox.-prolif','TRU')
+expr_profiles$phenotype = factor(expr_profiles$phenotype, levels = 1:3 , labels = labels)
+dim(expr_profiles)
 ```
 ## Treino dos modelos
 
@@ -1426,11 +1395,11 @@ Começamos por particionar os dados, utilizando uma fração de 80% para treino 
 
 ```{r}
 # Criação do training set
-set.seed(100)
-  
 inTrain = createDataPartition(y = expr_profiles$phenotype , p = 0.8, list = F)
 trainData = expr_profiles[inTrain,]
 testData = expr_profiles[-inTrain,]
+
+dim(trainData)
 ```
 ### Random forests
 
@@ -1450,7 +1419,7 @@ testData = expr_profiles[-inTrain,]
 
 ### Multi-Layer Perceptron (MLP)
 
-````{r}
+```{r}
 # Top 100
 #interv = 1:100
 
@@ -1462,13 +1431,14 @@ testData = expr_profiles[-inTrain,]
 #)
 
 ```
+
 ## Análise de Resultados
 
 ### Análise dos resultados do modeloe respetivas matrizes de confusão. 
 
 ```{r}
 # Carregamento dos modelos pré-treinados
-setwd('../')
+#setwd('../')
 
 # Random forests
 luad.rf.100   = readRDS('./models/random_forests/luad.rf.100.rds')
@@ -1589,7 +1559,7 @@ cm.mlp.100$byClass
 luad.mlp.500$results
 
 # Utilizamos o modelo de inferência no conjunto de testes
-pred.mlp.500 = predict(luad.mlp.500,testData[,interv])
+pred.mlp.500 = predict(luad.mlp.500,testData[,1:500])
 
 # Geramos e analisamos a matriz de confusão
 cm.mlp.500 = caret::confusionMatrix(pred.mlp.500, testData$phenotype)
@@ -1603,7 +1573,7 @@ cm.mlp.500$byClass
 luad.mlp.1000$results
 
 # Utilizamos o modelo de inferência no conjunto de testes
-pred.mlp.1000 = predict(luad.mlp.1000,testData[,interv])
+pred.mlp.1000 = predict(luad.mlp.1000,testData[,1:1000])
 
 # Geramos e analisamos a matriz de confusão
 cm.mlp.1000 = caret::confusionMatrix(pred.mlp.1000, testData$phenotype)
@@ -1619,7 +1589,7 @@ cm.mlp.1000$byClass
 luad.mlp.5000$results
 
 # Utilizamos o modelo de inferência no conjunto de testes
-pred.mlp.5000 = predict(luad.mlp.5000,testData[,interv])
+pred.mlp.5000 = predict(luad.mlp.5000,testData[,1:5000])
 
 # Geramos e analisamos a matriz de confusão
 cm.mlp.5000 = caret::confusionMatrix(pred.mlp.5000, testData$phenotype)
@@ -1633,7 +1603,7 @@ cm.mlp.5000$byClass
 luad.mlp.10000$results
 
 # Utilizamos o modelo de inferência no conjunto de testes
-pred.mlp.10000 = predict(luad.mlp.10000,testData[,interv])
+pred.mlp.10000 = predict(luad.mlp.10000,testData[,1:10000])
 
 # Geramos e analisamos a matriz de confusão
 cm.mlp.10000 = caret::confusionMatrix(pred.mlp.10000, testData$phenotype)
@@ -1648,7 +1618,7 @@ cm.mlp.10000$byClass
 luad.mlp.19529$results
 
 # Utilizamos o modelo de inferência no conjunto de testes
-pred.mlp.19529 = predict(luad.mlp.19529,testData[,interv])
+pred.mlp.19529 = predict(luad.mlp.19529,testData[,1:19529])
 
 # Geramos e analisamos a matriz de confusão
 cm.mlp.19529 = caret::confusionMatrix(pred.mlp.19529, testData$phenotype)

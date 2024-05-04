@@ -300,7 +300,7 @@ luad.mlp.100 = caret::train(
 
 ```{r}
 # Carregamento dos modelos pré-treinados
-
+setwd('../')
 # Random forests
 luad.rf.100   = readRDS('./models/random_forests/luad.rf.100.rds')
 luad.rf.500   = readRDS('./models/random_forests/luad.rf.500.rds')
