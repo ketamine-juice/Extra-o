@@ -199,8 +199,6 @@ Após a transferência dos dados é então gerado um objeto `summarizedExperimen
 # Alteramos o working  directory para a raiz, para ser mais fácil utilizar as diferentes pastas (modelos, scripts, etc.)
 setwd('../')
 
-
-
 # Carregamento do ficheiro
 load('luad_data_load.rda')
 luad_data = data
@@ -1133,9 +1131,10 @@ plotEnrichment(bg_genes_TRU[[head(fgseaRes_TRU[order(padj), ], 1)$pathway]],
   labs(title = head(fgseaRes_TRU[order(padj), ], 1)$pathway)
 ```
 
+
 # Redução de dimensionalidade
 
-A técnica de redução de dimensionalidade, através da "Principal Component Analysis" (PCA), visa simplificar conjuntos de dados extensos, encontrando um conjunto menor de variáveis não correlacionadas que capturam a maior parte da variabilidade. Isso é alcançado através da transformação das variáveis originais em componentes principais, que são ordenados pela sua capacidade de explicar a variabilidade dos dados. Esta técnica é valiosa quando há muitas variáveis e potencial redundância nos dados, mas é importante normalizar os dados antes da análise para garantir resultados adequados.
+Uma das técnicas mais populares de redução de dimensionalidade, a "Principal Component Analysis" (PCA), visa simplificar conjuntos de dados extensos, encontrando um conjunto menor de variáveis não correlacionadas que capturam a maior parte da variabilidade. Isso é alcançado através da transformação das variáveis originais em componentes principais, que são ordenados pela sua capacidade de explicar a variabilidade dos dados. Esta técnica é valiosa quando há muitas variáveis e potencial redundância nos dados, mas é importante normalizar os dados antes da análise para garantir resultados adequados.
 
 Em primeiro lugar, foi instalado mais um package que auxiliará na visualizaçao dos resultados da PCA.
 
@@ -1263,7 +1262,156 @@ geneIDs
 
 ```
 
-Sabe-se que, por exemplo, o gene DPEP3 apresenta o seu nível de expressão aumentado em casos de cancro do pulmão [@unknown-author-no-date]. Já o NCAPD2 é um biomarcador recente para o mau prognóstico do adenocarcinoma pulmonar [@li-2023]. O gene TAP2 apresenta defeitos na expressão em tumores pulmunares [@durgeau-2018].
+Sabe-se que, por exemplo, o gene MT-ND4 é um potencial biomarcador. Uma investigação recente trouxe à luz novas perspectivas sobre a influência mitocondrial na tumorigênese e metástase, destacando potenciais biomarcadores no mtDNA, especialmente o MT-ND4. Reforçando a importância de investigar a genética mitocondrial em conjunto com a progressão do cancro [@cavalcante-2022]. Outros estudos relataram amplificações dos genes CD74 e IGHG1 em larga escala em células de pacientes com LUAD [@zhang-2022, @cui-2021]. 
+
+#Análise Multi Dimensional
+
+A análise multidimensional é uma técnica de processamento de dados que permite analisar e explorar dados a partir de várias dimensões simultaneamente. Através da organização dos dados numa estrutura multidimensional chamada cubo de dados, composta por dimensões, medidas e hierarquias. Possibilitando a exploração dinâmica, análise e visualização de dados a partir de várias perspectivas [@dremio-2024].
+
+Foi então, em primeiro lugar, calculada a matriz de distâncias dos nossos dados de forma a medir a diferença entre cada par de observações.Isto permitirá entender melhor as relações entre os pontos de dados mais adiante.
+
+```{r}
+#cálculo da matriz de distâncias 
+dist_data = dist(data_normal, method = "euclidean")
+```
+
+```{r}
+#Guarda o ficheiro gerado anteriormente
+saveRDS(cmd.mds, file = './resultados/dist_data.rds')
+
+dist_data <- readRDS('./resultados/dist_data.rds')
+
+```
+
+De seguida, para a análise multidimensional recorremos à técnica clássica uma vez que é a mais adequada para dados quantitativos (expressão genética) [@unknown-author-no-date]. Usamos então a função "cmdscale". 
+
+```{r}
+cmd.mds  = cmdscale(dist_data, 3, eig = TRUE)
+```
+
+```{r}
+#Guarda o ficheiro gerado anteriormente
+saveRDS(cmd.mds, file = './resultados/cmd_mds.rds')
+
+# Carregamento do ficheiro RDS do resultado do cmdscale
+cmd.mds <- readRDS('./resultados/cmd_mds.rds')
+```
+
+
+```{r}
+
+library(ggpubr)
+
+
+colnames(mds) <- c("Dim.1", "Dim.2")
+# Plot MDS
+ggscatter(mds, x = "Dim.1", y = "Dim.2", 
+          label = rownames(data_normal),
+          size = 1,
+          repel = TRUE)
+```
+
+Depois foi calculada a variância explicada por cada coordenada no escalonamento multidimensional clássico e os valores foram convertidos em percentagem.
+
+```{r}
+var.pc1 = sum(cmd.mds$eig[1])/sum(abs(cmd.mds$eig)) * 100
+var.pc2 = sum(cmd.mds$eig[2])/sum(abs(cmd.mds$eig)) * 100
+var.pc3 = sum(cmd.mds$eig[3])/sum(abs(cmd.mds$eig)) * 100
+```
+De seguida, foram criados rótulos para as coordenadas no espaço multidimensional, indicando a proporção da variância explicada por cada coordenada. Esses rótulos são usados posteriormente para identificar e interpretar cada dimensão no contexto da análise.
+
+```{r}
+lab.pc1 = paste("Coordinate 1", sprintf(”(var.%.3f", var.pc1), "%)")
+lab.pc2 = paste("Coordinate 2", sprintf(”(var.%.3f", var.pc2), "%)")
+```
+
+Depois, foi construído um gráfico para visualizar os pontos resultantes da análise multidimensional nas duas primeiras dimensões. 
+
+```{r}
+par(mfrow = c(1,1))
+plot(cmd.mds$points[,c(1,2)],xlab=lab.pc1,ylab=lab.pc2,main="")
+```
+
+
+```{r}
+
+ mcols = rep("gray", length(data_normal))
+ #mcols[iris[,5]=="setosa"] = "blue"
+ #mcols[iris[,5]=="versicolor"] = "red”
+ #mcols[iris[,5]=="virginica"] = "green"
+ 
+ 
+ plot(cmd.mds$points[,c(1,2)],xlab=lab.pc1,ylab=lab.pc2,col= mcols, pch = 
+19, main="")
+ plot(ord$points[,c(1,2)],xlab=lab.pc1,ylab=lab.pc2,main="", col= mcols, 
+pch = 19)
+```
+
+
+# Clustering
+
+O clustering permite o agrupamento de objetos que estão intimamente associados dentro de um determinado conjunto de dados. Ao realizar clustering, atribuímos características (ou propriedades) a cada grupo. Em seguida, podemos proceder à criação do que chamamos de clusters com base nessas propriedades compartilhadas. É uma ferramenta útil e direta para compreender padrões de dados. Sendo também útil na  identificação de anomalias ou outliers, que são casos que se destacam dos restantes dados [@hassan-2023]. 
+
+## Clustering hierárquico 
+
+É um método popular para agrupar objetos através da criação de grupos de modo que os objetos dentro de um grupo sejam semelhantes entre si e diferentes dos objetos nos restantes grupos. Os clusters são representados visualmente através de um dendrograma. Possui algumas vantagens:
+
+* Não é necessário especificar previamente o número de clusters. 
+* Os dados são facilmente resumidos/organizados usando dendrogramas.
+* Os dendrogramas facilitam a análise e interpretação dos clusters.
+
+Para clustering hierárquico, é usada a matriz de distâncias. E depois, o algoritmo de clustering hierárquico é aplicado à matriz de distâncias para agrupar os pontos em clusters hierárquicos. Por fim, é gerado um dendrograma que visualiza a estrutura hierárquica dos clusters. Este dendrograma mostra como os clusters são formados e como os diferentes pontos de dados estão relacionados entre si em diferentes níveis de similaridade [@unknown-author-no-date1].
+
+```{r}
+hc = hclust(dist_data, method = "complete")
+plot(hc)
+my.plot.hc (hc, meta$expr, cex = 0.5)
+```
+
+Em cima usamos o método "complete" em que é feito o cálculo da distância entre dois clusters como a maior distância entre os pares de pontos pertencentes a cada um dos dois clusters. Por outra palavras, é medida a distância máxima entre os elementos de dois clusters.
+
+Seguidamente, experimentámos com o método "average" que calcula a distância entre dois clusters como a média das distâncias entre todos os pares de pontos pertencentes a cada um dos dois clusters. 
+
+```{r}
+hc = hclust(dist_data, method = "average")
+plot(hc)
+my.plot.hc (hc, meta$expr, cex = 0.5)
+```
+
+## k-means Clustering
+
+O K-means clustering procura realizar a dividisão do conjunto de dados em K subgrupos distintos e não sobrepostos (clusters) previamente definidos, onde cada ponto de dados pertence apenas a um grupo.  Pretende-se que os pontos de dados intra-cluster sejam o mais semelhantes possível, ao mesmo tempo em que mantém os clusters o mais diferentes (distantes) possível. 
+São atribuídos pontos de dados a um cluster de forma que a soma das distâncias quadradas entre os pontos de dados e o centróide do cluster (média aritmética de todos os pontos de dados que pertencem a esse cluster) seja mínima. Quanto menos variação tivermos dentro dos clusters, mais homogéneos (semelhantes) serão os pontos de dados dentro do mesmo cluster. O objetivo final é encontrar grupos que capturem a estrutura subjacente dos dados e sejam interpretáveis e úteis para a análise [@dabbura-2022].
+
+Utilizando o algoritmo K-means para agrupar dados de uma análise multidimensional em três clusters, foi criado um gráfico de dispersão para visualizar os clusters, com cores distintas para cada grupo e elipses de dispersão para representar a distribuição dos pontos. Os rótulos dos pontos mostram os valores de expressão associados a cada ponto.
+
+```{r}
+# Bibliotecas necessárias
+library(cluster)
+library(ggpubr)
+library(ggrepel)
+
+# Formar clusters utilizando o agrupamento K-mean
+kmeans_clusters = kmeans(cmd.mds, centers = 3)$cluster
+
+# Add cluster information to the MDS results
+mds_df = as.data.frame(cmd.mds)
+mds_df$groups = as.factor(kmeans_clusters)
+mds_df$expr = meta$expr  
+
+
+ggscatter(mds_df, x = "V1", y = "V2",
+          color = "groups",
+          palette = "jco",
+          size = 3,
+          ellipse = TRUE,
+          ellipse.type = "convex",
+          title = "K-means Clustering of MDS Iris Data",
+          xlab = "MDS Dimension 1",
+          ylab = "MDS Dimension 2") +
+  geom_text_repel(aes(label = expr), box.padding = 0.5)
+```
+
 
 
 ```{r}
