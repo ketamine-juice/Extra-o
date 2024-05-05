@@ -19,9 +19,7 @@ Irão ser testados os seguintes modelos:
 -   **Random Forests**: O modelo de aprendizagem automática com recurso a [random forests](https://www.sciencedirect.com/topics/engineering/random-forest) é um modelo de classificação que implementa um conjunto de árvores de decisão. O modelo sustenta-se na análise e classificação de dados com base em padrões. Este parece ser um modelo adequado para a identificação de fenótipos de cancro com base em perfis de expressão genética e pode ser um potencial modelo adequado para os nossos dados atendendo aos padrões claramente visíveis na representação dos dados por *heatmap*. Este modelo já foi inclusive corretamente implementado na previsão de fenótipos de cancro por Wang et al.
 -   **Multi-Layer Perceptron (MLP)**: Um [MLP](https://www.sciencedirect.com/topics/veterinary-science-and-veterinary-medicine/multilayer-perceptron) é um tipo de [rede neuronal](https://www.sciencedirect.com/topics/social-sciences/neural-network) communmente utilizado na classificação de dados com base em padrões. Com base no seu funcionamento e lógica de utilização, poderá ter um desempenho interessante e adequado para o tipo de dados que estamos a analisar.
 
--   **Gradient Linear Discriminant Analysis (GLDA)**: (https://www.sciencedirect.com/science/article/pii/S0169023X08000517?casa_token=OsX0MXGP2sUAAAAA:Rw7fvJbFNUW0MQbGB9TAZvQrQjSaPLwet9CPJdOTSNtY5JHkR82gE_BFEhY4vN84a4SrtTt1SZY)
--   **C4.5 decision tree**: No caret: C4.5-like Trees (https://koreascience.kr/article/JAKO201610659891971.page)
--   **SVM**: Ver qual SVM escolher no caret (https://koreascience.kr/article/JAKO201610659891971.page)
+-   **C4.5 decision tree** e **Support Vector Machine (SVM)**: Estes algoritmos (https://pubmed.ncbi.nlm.nih.gov/26925688/) já foram utilizados com sucesso para classificar cancro do pulmão baseado em níveis de expressão genética num estudo de Podolsky et al. [@Podolsky2016], por isso parecem ser adequados para o nosso estudo.
 
 
 ```{r}
