@@ -14,14 +14,62 @@ A análise dos dados foi realizada utilizando a ferramenta edgeR.
 Para reproduzir a análise, é recomendada a instalação das seguintes bibliotecas do Bioconductor: 
 
 ```R
-library(edgeR)
-library(limma)
-library(Glimma)
-library(gplots)
-library(org.Mm.eg.db)
-library(RColorBrewer)
-library(TCGAbiolinks)
-library(SummarizedExperiment)
+ if (!require("BiocManager"))
+      install.packages("BiocManager")
+  
+  if (!require("edgeR"))
+    BiocManager::install("edgeR")
+  
+  if (!require("limma"))
+    BiocManager::install("limma")
+  
+  if (!require("Glimma"))
+    BiocManager::install(c("Glimma"))
+  
+  if (!require("gplots"))
+    BiocManager::install(c("gplots"))
+  
+  if (!require("RColorBrewer"))
+    BiocManager::install(c("RColorBrewer"))
+  
+  if (!require("TCGAbiolinks"))
+    BiocManager::install("TCGAbiolinks")
+  
+  if (!require("SummarizedExperiment"))
+    BiocManager::install("SummarizedExperiment")
+  
+  if (!require("biomaRt"))
+    BiocManager::install("biomaRt")
+  
+  if (!require("GSEABase"))
+    BiocManager::install(c("GSEABase"))
+  
+  if (!require("fgsea"))
+    BiocManager::install(c("fgsea"))
+  
+  if (!require("clusterProfiler"))
+    BiocManager::install("clusterProfiler")
+  
+  if (!require("ggplot2"))
+    install.packages("ggplot2")
+  
+  if (!require("dplyr"))
+    install.packages("dplyr")
+  
+  if (!require("annotables")) {
+    install.packages("devtools")
+    devtools::install_github("stephenturner/annotables")
+  }
+  
+  if (!require("caret"))
+    install.packages("caret")
+  
+  if (!require("EnsDb.Hsapiens.v79"))
+    BiocManager::install("EnsDb.Hsapiens.v79")
+
+  if (!require("factoextra"))
+    install.packages("factoextra")
+  
 ```
 
 ### Transferência e Carregamento do Data Set
