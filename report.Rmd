@@ -1424,8 +1424,8 @@ Para esta análise iremos partir dos perfis de variabilidade de expressão previ
 De modo a facilitar a visualização e ter uma visão de um possível comportamento do modelo, criamos vários **heatmaps** para cada uma das amostras.
 
 ```{r}
-#load('luad_data_load.rda')
-#luad_data = data
+load('luad_data_load.rda')
+luad_data = data
 seqdata = as.data.frame(assay(luad_data, 'unstranded'))
 expr = luad_data$paper_expression_subtype
 colnames(seqdata) = luad_data$sample_id
@@ -1845,8 +1845,6 @@ cm.mlp.19529$byClass
 Ao analisar os resultados obtidos concluímos que o modelo de random forests é o modelo com melhores resultados, obtendo sempre uma precisão de 100% na classificação de amostras ao fenótipo correspondente. Contudo, estes resultados são algo suspeitos pois não é plausível existir um modelo que acerte 100% dos casos, mesmo com a aplicação de técnicas de validação cruzada e bootstrapping. Estes resultados podem estar relacionados com o facto de o conjunto de dados que estamos a utilizar não ser grande o suficiente. Seria interessante portanto utilizar um conjunto de dados mais extenso e voltar a testar e treinar os modelos. 
 
 Já para os resultados do modelo MLP, vemos que este apresenta uma precisão de 100% para os "top" 100, 500 e 1000 entrando depois em decrescimo à medida que vamos tendo maior número de genes nos perfis. É de notar, no entanto, que a performance do modelo para 10000 genes é superior à performance para 5000 genes, o que pode representar que podem haver bastantes semelhanças nos top 5000 genes já haver fatores mais discrepantes quando voltamos a ter uma maior variabilidade de genes. Todavia este já é um comportamento mais ajustado à realidade, sobretudo sendo que o maior elemento de confusão está entre os tipos TRU e prox.-prolif que, através da análise dos heatmaps, podemos verificar que são os que apresentam os perfis de expressão mais similares.
-
-**SUGESTÃO PARA VEREM SE CONCORDAM**: Consideraria que o MLP não é o mais adequado, atendendo ao tipo de modelo, mas ainda assim demonstra uma performance satisfatória, tendo obtido uma precisão média na ordem dos 75%.
 
 
 
