@@ -2,6 +2,7 @@
 GDCdata
 *.rda
 *.pkl
+*.pdf
 
 # Específicos MAC
 .DS_Store
